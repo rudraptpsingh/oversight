@@ -13,6 +13,7 @@ import { getBySymbolTool, handleGetBySymbol } from "./tools/getBySymbol.js"
 import { searchTool, handleSearch } from "./tools/search.js"
 import { recordTool, handleRecord } from "./tools/record.js"
 import { checkChangeTool, handleCheckChange } from "./tools/checkChange.js"
+import { metricsTool, handleGetMetrics } from "./tools/metrics.js"
 
 const require = createRequire(import.meta.url)
 const pkg = require("../../package.json") as { version: string }
@@ -26,7 +27,7 @@ const whycodeDir = getWhycodeDir()
 const db = getDb(whycodeDir)
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [getByPathTool, getBySymbolTool, searchTool, recordTool, checkChangeTool],
+  tools: [getByPathTool, getBySymbolTool, searchTool, recordTool, checkChangeTool, metricsTool],
 }))
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -51,6 +52,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break
       case "whycode_check_change":
         result = handleCheckChange(db, input as Parameters<typeof handleCheckChange>[1])
+        break
+      case "whycode_get_metrics":
+        result = handleGetMetrics(db)
         break
       default:
         return {

@@ -11,6 +11,18 @@ export function initDb(whycodeDir: string): Database.Database {
   db.pragma("foreign_keys = ON")
 
   db.exec(`
+    CREATE TABLE IF NOT EXISTS check_change_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      change_description TEXT NOT NULL,
+      affected_paths_json TEXT NOT NULL DEFAULT '[]',
+      relevant_decision_ids_json TEXT NOT NULL DEFAULT '[]',
+      must_constraint_count INTEGER NOT NULL DEFAULT 0,
+      should_constraint_count INTEGER NOT NULL DEFAULT 0,
+      risk_level TEXT NOT NULL,
+      warning_count INTEGER NOT NULL DEFAULT 0,
+      timestamp TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS decisions (
       id TEXT PRIMARY KEY,
       version INTEGER NOT NULL DEFAULT 1,

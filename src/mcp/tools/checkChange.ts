@@ -1,5 +1,6 @@
 import Database from "better-sqlite3"
 import { getDecisionsByPath } from "../../db/decisions.js"
+import { logCheckChange } from "../../db/metrics.js"
 import type { WhyCodeRecord, Constraint, CheckChangeResult } from "../../types/index.js"
 
 export const checkChangeTool = {
@@ -55,6 +56,21 @@ export function handleCheckChange(
   let riskLevel: "low" | "medium" | "high" = "low"
   if (mustConstraints.length > 0) riskLevel = "high"
   else if (shouldConstraints.length > 0) riskLevel = "medium"
+
+  try {
+    logCheckChange(db, {
+      changeDescription: input.changeDescription,
+      affectedPaths: input.affectedPaths,
+      relevantDecisionIds: allDecisions.map((d) => d.id),
+      mustConstraintCount: mustConstraints.length,
+      shouldConstraintCount: shouldConstraints.length,
+      riskLevel,
+      warningCount: warnings.length,
+      timestamp: new Date().toISOString(),
+    })
+  } catch {
+    // metrics logging is best-effort
+  }
 
   return { relevantDecisions: allDecisions, mustConstraints, warnings, riskLevel }
 }

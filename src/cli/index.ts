@@ -8,6 +8,7 @@ import { registerCheck } from "./commands/check.js"
 import { registerReview } from "./commands/review.js"
 import { registerHeatmap } from "./commands/heatmap.js"
 import { registerHooks } from "./commands/hooks.js"
+import { registerMetrics } from "./commands/metrics.js"
 
 const require = createRequire(import.meta.url)
 const pkg = require("../../package.json") as { version: string; description: string }
@@ -26,6 +27,7 @@ registerCheck(program)
 registerReview(program)
 registerHeatmap(program)
 registerHooks(program)
+registerMetrics(program)
 
 program.parseAsync(process.argv).catch((err: unknown) => {
   console.error(String(err))
