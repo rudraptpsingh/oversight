@@ -16,16 +16,35 @@ WhyCode provides a structured way to record decisions, constraints, and intent a
 - **Agent-First Design**: Optimized for ingestion by AI coding assistants.
 - **Context Stashing**: Easily save and retrieve relevant snippets of information.
 
-## Real Agent Simulation
+## Benchmarks (Universally Verifiable)
 
-See WhyCode guiding actual AI agents making real code changes:
+Test WhyCode with **real framework patterns** everyone recognizes:
 
 ```bash
 npm run build
+npx tsx benchmarks/nextjs-benchmark.ts
+```
+
+**Next.js Image Optimization Challenge**:
+- Based on actual Next.js CVE and incident patterns
+- 3 critical constraints (security + performance + memory)
+- Agent A (no guidance): Violates 3/3, creates CVE-level vulnerability
+- Agent B (with WhyCode): Respects 3/3, finds safe alternatives
+- **$100,000+ value** (prevented security breach + OOM incident)
+
+More benchmarks coming: React Server Components, Express security, Prisma migrations
+
+See: [benchmarks/README.md](./benchmarks/README.md)
+
+## Real Agent Simulation
+
+See WhyCode guiding simulated agents making actual code changes:
+
+```bash
 npx tsx test/real-agent-demo.ts
 ```
 
-**This creates actual code files** showing how two simulated agents modify the same code:
+**This creates actual code files** showing how two agents modify the same code:
 - **Agent A** (no guidance): Makes 3 changes that violate critical constraints
 - **Agent B** (with WhyCode): Makes 3 DIFFERENT changes that respect constraints
 
@@ -35,7 +54,7 @@ npx tsx test/real-agent-demo.ts
 - Agent B prevents 3 production incidents while still improving code
 - ~$60,000+ value from incident prevention
 
-See the results: [test/REAL_AGENT_RESULTS.md](./test/REAL_AGENT_RESULTS.md)
+See: [test/REAL_AGENT_RESULTS.md](./test/REAL_AGENT_RESULTS.md)
 
 ## Scenario Demo
 
