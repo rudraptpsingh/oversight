@@ -29,11 +29,11 @@
     "architecture-decision-records"
   ],
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.12.0"
   },
   "bin": {
-    "whycode": "./dist/cli/index.js",
-    "whycode-mcp": "./dist/mcp/server.js"
+    "whycode": "dist/cli/index.js",
+    "whycode-mcp": "dist/mcp/server.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
