@@ -1,0 +1,529 @@
+{
+  "run_date": "2026-03-15T09:09:15.095Z",
+  "simulation_type": "live-end-to-end",
+  "total_conversations": 9,
+  "total_extracted": 23,
+  "total_inserted": 23,
+  "total_deduped": 0,
+  "avg_coverage_pct": 100,
+  "avg_mutation_agreement_pct": 81,
+  "bad_mutations_blocked": 8,
+  "total_bad_mutations": 18,
+  "block_rate_pct": 44,
+  "false_negatives": 1,
+  "total_ai_ms": 321252,
+  "scenarios": [
+    {
+      "scenarioId": "auth",
+      "scenarioLabel": "Express Auth Middleware",
+      "conversations": 3,
+      "extracted": 8,
+      "inserted": 8,
+      "deduped": 0,
+      "coveragePct": 100,
+      "mutationAgreementPct": 86,
+      "blockedBad": 4,
+      "totalBad": 6,
+      "falseNegatives": 1,
+      "captureResults": [
+        {
+          "conversationId": "auth-incident-1",
+          "title": "JWT decode() bypass — 12k accounts exposed",
+          "extracted": 3,
+          "inserted": 3,
+          "durationMs": 41717,
+          "recordTitles": [
+            "Always use jwt.verify() for authentication, never jwt.decode()",
+            "jwt.decode() permitted only for reading claims from already-verified tokens",
+            "Standard pattern for JWT verification in authentication middleware"
+          ]
+        },
+        {
+          "conversationId": "auth-incident-2",
+          "title": "Security audit Q1 2024 — tokens in query params + next() on failure",
+          "extracted": 2,
+          "inserted": 2,
+          "durationMs": 33800,
+          "recordTitles": [
+            "Never Accept Tokens from Query Parameters",
+            "Auth Middleware Catch Blocks Must Return 401, Never Call next()"
+          ]
+        },
+        {
+          "conversationId": "auth-incident-3",
+          "title": "Pen test — alg:none bypass + ignoreExpiration + payload spread",
+          "extracted": 3,
+          "inserted": 3,
+          "durationMs": 39320,
+          "recordTitles": [
+            "JWT Algorithm Pinning Required (alg:none vulnerability)",
+            "JWT Expiration Checking Must Never Be Disabled",
+            "Explicit JWT Payload Mapping Required (No Raw Spread)"
+          ]
+        }
+      ],
+      "coverage": [
+        {
+          "evalConstraintId": "auth-001",
+          "evalConstraintTitle": "Uses jwt.verify() not jwt.decode()",
+          "severity": "critical",
+          "coveredByRecord": "799e9e6b-8422-47b7-be85-a7f3f2e0a5d5",
+          "coveredByTitle": "Always use jwt.verify() for authentication, never jwt.decode()",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.75
+        },
+        {
+          "evalConstraintId": "auth-002",
+          "evalConstraintTitle": "Accepts tokens only from Authorization header",
+          "severity": "critical",
+          "coveredByRecord": "f3064f1e-ff51-4349-943c-0c1566133028",
+          "coveredByTitle": "Never Accept Tokens from Query Parameters",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.74
+        },
+        {
+          "evalConstraintId": "auth-003",
+          "evalConstraintTitle": "Returns 401 on failure, never calls next() in catch",
+          "severity": "critical",
+          "coveredByRecord": "d6db7413-9d1c-414a-b7ee-ff3524eec7dd",
+          "coveredByTitle": "Auth Middleware Catch Blocks Must Return 401, Never Call next()",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.67
+        },
+        {
+          "evalConstraintId": "auth-004",
+          "evalConstraintTitle": "Rejects tokens with algorithm=none (alg:none attack)",
+          "severity": "critical",
+          "coveredByRecord": "9d026efb-95d3-4a8b-8fc0-6966af0e25e1",
+          "coveredByTitle": "JWT Algorithm Pinning Required (alg:none vulnerability)",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.73
+        },
+        {
+          "evalConstraintId": "auth-005",
+          "evalConstraintTitle": "Token expiry validated (exp claim checked)",
+          "severity": "high",
+          "coveredByRecord": "f14951d9-dbfb-483c-a69c-890454ecb861",
+          "coveredByTitle": "JWT Expiration Checking Must Never Be Disabled",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.59
+        },
+        {
+          "evalConstraintId": "auth-006",
+          "evalConstraintTitle": "req.user set with typed fields only (no raw payload spread)",
+          "severity": "medium",
+          "coveredByRecord": "c409f9ac-cb48-44f6-bacd-339d7bae9430",
+          "coveredByTitle": "Explicit JWT Payload Mapping Required (No Raw Spread)",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.5
+        }
+      ],
+      "mutations": [
+        {
+          "id": "B",
+          "label": "Mutation B — uses jwt.decode()",
+          "liveBlocks": true,
+          "referenceBlocks": true,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 1
+        },
+        {
+          "id": "A",
+          "label": "Mutation A — accepts req.query token",
+          "liveBlocks": true,
+          "referenceBlocks": true,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 2
+        },
+        {
+          "id": "C",
+          "label": "Mutation C — calls next() on failure",
+          "liveBlocks": true,
+          "referenceBlocks": true,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 2
+        },
+        {
+          "id": "E",
+          "label": "Mutation E — no algorithms option",
+          "liveBlocks": true,
+          "referenceBlocks": true,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 1
+        },
+        {
+          "id": "F",
+          "label": "Mutation F — ignoreExpiration:true",
+          "liveBlocks": false,
+          "referenceBlocks": false,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 0
+        },
+        {
+          "id": "G",
+          "label": "Mutation G — raw payload spread",
+          "liveBlocks": false,
+          "referenceBlocks": false,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 0
+        },
+        {
+          "id": "D",
+          "label": "Mutation D — correct implementation",
+          "liveBlocks": true,
+          "referenceBlocks": false,
+          "agreement": false,
+          "isCorrect": true,
+          "liveViolationCount": 1
+        }
+      ]
+    },
+    {
+      "scenarioId": "rate",
+      "scenarioLabel": "Redis Rate Limiter",
+      "conversations": 3,
+      "extracted": 8,
+      "inserted": 8,
+      "deduped": 0,
+      "coveragePct": 100,
+      "mutationAgreementPct": 86,
+      "blockedBad": 2,
+      "totalBad": 6,
+      "falseNegatives": 0,
+      "captureResults": [
+        {
+          "conversationId": "rate-incident-1",
+          "title": "DDoS bypass via GET+SET race condition — 40k req/s",
+          "extracted": 2,
+          "inserted": 2,
+          "durationMs": 28822,
+          "recordTitles": [
+            "Rate Limiter Must Use Atomic Redis INCR",
+            "Rate Limiter TTL Must Be Set Only On First Request"
+          ]
+        },
+        {
+          "conversationId": "rate-incident-2",
+          "title": "Redis outage: fail-open + permanent lockout from missing TTL",
+          "extracted": 3,
+          "inserted": 3,
+          "durationMs": 40092,
+          "recordTitles": [
+            "Rate Limiter Must Fail-Closed on Redis Errors",
+            "Rate Limiter Must Use Atomic Lua Script for INCR+EXPIRE",
+            "Critical Errors Must Not Be Silent — Fail Loudly"
+          ]
+        },
+        {
+          "conversationId": "rate-incident-3",
+          "title": "IP-only key caused /health monitoring blackout",
+          "extracted": 3,
+          "inserted": 3,
+          "durationMs": 33712,
+          "recordTitles": [
+            "Per-Endpoint Rate Limit Key Isolation",
+            "Rate Limit Response Headers Requirement",
+            "Rate Limit Window as Named Constant"
+          ]
+        }
+      ],
+      "coverage": [
+        {
+          "evalConstraintId": "rate-001",
+          "evalConstraintTitle": "Uses atomic redis.incr() not GET+SET",
+          "severity": "critical",
+          "coveredByRecord": "23d186f2-14b9-4b71-9529-e00791069995",
+          "coveredByTitle": "Rate Limiter Must Use Atomic Redis INCR",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.56
+        },
+        {
+          "evalConstraintId": "rate-002",
+          "evalConstraintTitle": "Returns 503 on Redis failure (fail-closed)",
+          "severity": "critical",
+          "coveredByRecord": "ef8d50b2-a942-46d1-b3ae-3b1e3d9bfded",
+          "coveredByTitle": "Rate Limiter Must Fail-Closed on Redis Errors",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.54
+        },
+        {
+          "evalConstraintId": "rate-003",
+          "evalConstraintTitle": "Sets TTL on key when current === 1",
+          "severity": "high",
+          "coveredByRecord": "c058e63b-6f87-4df0-85ef-f8121bade923",
+          "coveredByTitle": "Rate Limiter TTL Must Be Set Only On First Request",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.62
+        },
+        {
+          "evalConstraintId": "rate-004",
+          "evalConstraintTitle": "Rate limit key includes route path (per-endpoint isolation)",
+          "severity": "high",
+          "coveredByRecord": "0124387a-4e76-4a7f-bb69-437975ef300b",
+          "coveredByTitle": "Per-Endpoint Rate Limit Key Isolation",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.61
+        },
+        {
+          "evalConstraintId": "rate-005",
+          "evalConstraintTitle": "Sends X-RateLimit-Remaining and X-RateLimit-Reset headers",
+          "severity": "medium",
+          "coveredByRecord": "93e0c3c8-09d5-4f1e-ba78-b294b36ea3dd",
+          "coveredByTitle": "Rate Limit Response Headers Requirement",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.65
+        },
+        {
+          "evalConstraintId": "rate-006",
+          "evalConstraintTitle": "Rate limit window is validated against config constant",
+          "severity": "medium",
+          "coveredByRecord": "866aa928-f42e-43bb-9beb-c013448c4d3c",
+          "coveredByTitle": "Rate Limit Window as Named Constant",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.48
+        }
+      ],
+      "mutations": [
+        {
+          "id": "A",
+          "label": "Mutation A — GET+SET race condition",
+          "liveBlocks": true,
+          "referenceBlocks": true,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 4
+        },
+        {
+          "id": "C",
+          "label": "Mutation C — next() on Redis failure",
+          "liveBlocks": true,
+          "referenceBlocks": true,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 2
+        },
+        {
+          "id": "B",
+          "label": "Mutation B — no TTL set",
+          "liveBlocks": false,
+          "referenceBlocks": true,
+          "agreement": false,
+          "isCorrect": false,
+          "liveViolationCount": 0
+        },
+        {
+          "id": "E",
+          "label": "Mutation E — IP-only key",
+          "liveBlocks": false,
+          "referenceBlocks": false,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 0
+        },
+        {
+          "id": "F",
+          "label": "Mutation F — missing rate limit headers",
+          "liveBlocks": false,
+          "referenceBlocks": false,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 0
+        },
+        {
+          "id": "G",
+          "label": "Mutation G — hardcoded TTL",
+          "liveBlocks": false,
+          "referenceBlocks": false,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 0
+        },
+        {
+          "id": "D",
+          "label": "Mutation D — correct implementation",
+          "liveBlocks": false,
+          "referenceBlocks": false,
+          "agreement": true,
+          "isCorrect": true,
+          "liveViolationCount": 0
+        }
+      ]
+    },
+    {
+      "scenarioId": "dbtx",
+      "scenarioLabel": "DB Order Transaction",
+      "conversations": 3,
+      "extracted": 7,
+      "inserted": 7,
+      "deduped": 0,
+      "coveragePct": 100,
+      "mutationAgreementPct": 71,
+      "blockedBad": 2,
+      "totalBad": 6,
+      "falseNegatives": 0,
+      "captureResults": [
+        {
+          "conversationId": "dbtx-incident-1",
+          "title": "Connection pool exhaustion — release() not in finally — 18min outage",
+          "extracted": 3,
+          "inserted": 3,
+          "durationMs": 46773,
+          "recordTitles": [
+            "Database connection release must use finally block",
+            "Database transactions must ROLLBACK on error to prevent partial commits",
+            "Database connection pool sizing must account for error scenarios"
+          ]
+        },
+        {
+          "conversationId": "dbtx-incident-2",
+          "title": "Non-atomic inventory check — 300 oversold orders — $40k refunds",
+          "extracted": 3,
+          "inserted": 3,
+          "durationMs": 38853,
+          "recordTitles": [
+            "Atomic Inventory Updates Required",
+            "Explicit rowCount Check After Inventory UPDATE",
+            "Explicit Transactions Required for Multi-Step Operations"
+          ]
+        },
+        {
+          "conversationId": "dbtx-incident-3",
+          "title": "Architecture review — no connectionTimeoutMillis — OOM risk",
+          "extracted": 1,
+          "inserted": 1,
+          "durationMs": 18162,
+          "recordTitles": [
+            "Database Pool Must Configure Connection Timeout"
+          ]
+        }
+      ],
+      "coverage": [
+        {
+          "evalConstraintId": "dbtx-001",
+          "evalConstraintTitle": "client.release() is in finally block",
+          "severity": "critical",
+          "coveredByRecord": "e34ee721-28dc-414c-b3d0-fd8a6a0e01db",
+          "coveredByTitle": "Database connection release must use finally block",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.69
+        },
+        {
+          "evalConstraintId": "dbtx-002",
+          "evalConstraintTitle": "Atomic inventory check-and-decrement (WHERE quantity >= $N)",
+          "severity": "critical",
+          "coveredByRecord": "081950d5-eba4-42bd-81f4-ef3e2a5886e0",
+          "coveredByTitle": "Atomic Inventory Updates Required",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.78
+        },
+        {
+          "evalConstraintId": "dbtx-003",
+          "evalConstraintTitle": "ROLLBACK called in catch block",
+          "severity": "critical",
+          "coveredByRecord": "ed122144-6f35-420b-923d-a16621feabe9",
+          "coveredByTitle": "Database transactions must ROLLBACK on error to prevent partial commits",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.6
+        },
+        {
+          "evalConstraintId": "dbtx-004",
+          "evalConstraintTitle": "Explicit BEGIN transaction before multi-step operations",
+          "severity": "critical",
+          "coveredByRecord": "27cab459-d9f3-485c-b159-34dddfc86d0d",
+          "coveredByTitle": "Explicit Transactions Required for Multi-Step Operations",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.74
+        },
+        {
+          "evalConstraintId": "dbtx-005",
+          "evalConstraintTitle": "rowCount checked to detect zero-stock (not just query success)",
+          "severity": "high",
+          "coveredByRecord": "cdd114ab-4d53-4313-ae04-2f12092be220",
+          "coveredByTitle": "Explicit rowCount Check After Inventory UPDATE",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.46
+        },
+        {
+          "evalConstraintId": "dbtx-006",
+          "evalConstraintTitle": "Pool acquisition wrapped with timeout (no indefinite pool wait)",
+          "severity": "medium",
+          "coveredByRecord": "e9897730-74bb-495e-ac9b-3e21e9fec6c2",
+          "coveredByTitle": "Database Pool Must Configure Connection Timeout",
+          "coverageMethod": "semantic-match",
+          "matchScore": 0.61
+        }
+      ],
+      "mutations": [
+        {
+          "id": "A",
+          "label": "Mutation A — no try/catch, no release",
+          "liveBlocks": true,
+          "referenceBlocks": true,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 3
+        },
+        {
+          "id": "B",
+          "label": "Mutation B — release before ROLLBACK",
+          "liveBlocks": true,
+          "referenceBlocks": true,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 2
+        },
+        {
+          "id": "C",
+          "label": "Mutation C — no atomic inventory check",
+          "liveBlocks": false,
+          "referenceBlocks": true,
+          "agreement": false,
+          "isCorrect": false,
+          "liveViolationCount": 0
+        },
+        {
+          "id": "E",
+          "label": "Mutation E — missing BEGIN",
+          "liveBlocks": false,
+          "referenceBlocks": true,
+          "agreement": false,
+          "isCorrect": false,
+          "liveViolationCount": 0
+        },
+        {
+          "id": "F",
+          "label": "Mutation F — rowCount not checked",
+          "liveBlocks": false,
+          "referenceBlocks": false,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 0
+        },
+        {
+          "id": "G",
+          "label": "Mutation G — no connectionTimeoutMillis",
+          "liveBlocks": false,
+          "referenceBlocks": false,
+          "agreement": true,
+          "isCorrect": false,
+          "liveViolationCount": 0
+        },
+        {
+          "id": "D",
+          "label": "Mutation D — correct implementation",
+          "liveBlocks": false,
+          "referenceBlocks": false,
+          "agreement": true,
+          "isCorrect": true,
+          "liveViolationCount": 0
+        }
+      ]
+    }
+  ]
+}
