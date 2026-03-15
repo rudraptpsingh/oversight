@@ -228,8 +228,8 @@ export function requireAuth(req: AuthenticatedRequest, res: Response, next: Next
   const token = authHeader.slice(7);
 
   try {
-    // Correct: uses jwt.verify with secret, passes to next on success
-    const payload = jwt.verify(token, JWT_SECRET) as any;
+    // Correct: uses jwt.verify with secret and explicit algorithms option
+    const payload = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as any;
     req.user = {
       id: payload.sub,
       role: payload.role,
@@ -256,12 +256,115 @@ export function requireRole(role: string | string[]) {
 }
 `;
 
+// Mutation E: jwt.verify without algorithms option (alg:none attack vector)
+export const MUTATION_E = `
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET!;
+
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    role: string;
+    sessionId: string;
+  };
+}
+
+export function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing authorization header' });
+  }
+
+  const token = authHeader.slice(7);
+
+  try {
+    // "Simplified" - no algorithm option (pen test shows alg:none accepted)
+    const payload = jwt.verify(token, JWT_SECRET) as any;
+    req.user = {
+      id: payload.sub,
+      role: payload.role,
+      sessionId: payload.sid,
+    };
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+`;
+
+// Mutation F: ignoreExpiration:true set (expired tokens authenticate forever)
+export const MUTATION_F = `
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET!;
+
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    role: string;
+    sessionId: string;
+  };
+}
+
+export function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing authorization header' });
+  }
+
+  const token = authHeader.slice(7);
+
+  try {
+    // "Fix" for test flake: ignoring expiration so long-lived test tokens work
+    const payload = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'], ignoreExpiration: true }) as any;
+    req.user = {
+      id: payload.sub,
+      role: payload.role,
+      sessionId: payload.sid,
+    };
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+`;
+
+// Mutation G: raw payload spread into req.user (privilege escalation via injected claims)
+export const MUTATION_G = `
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET!;
+
+export interface AuthenticatedRequest extends Request {
+  user?: any;
+}
+
+export function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing authorization header' });
+  }
+
+  const token = authHeader.slice(7);
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as any;
+    // "Convenient" - spread all payload fields onto req.user
+    req.user = { ...payload };
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+`;
+
 /**
- * The 3 phases of constraint documentation, built incrementally.
- *
- * Phase 1: No constraints (day 0 - team hasn't learned lessons yet)
- * Phase 2: One constraint added after a security incident
- * Phase 3: Full constraints after second incident + audit
+ * The 6 phases of constraint documentation, built incrementally.
+ * Each phase = one new constraint added after a real incident/audit.
  */
 
 export const PHASE_1_CONSTRAINTS: string[] = [];

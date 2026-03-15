@@ -185,6 +185,113 @@ export async function rateLimiter(req: Request, res: Response, next: NextFunctio
 }
 `;
 
+// Mutation E: IP-only key — all endpoints share one counter (cross-endpoint bleed)
+export const MUTATION_E = `
+import { Request, Response, NextFunction } from 'express';
+import { createClient } from 'redis';
+
+const redis = createClient({ url: process.env.REDIS_URL });
+redis.connect();
+
+const WINDOW_SECONDS = 60;
+const MAX_REQUESTS = 100;
+
+export async function rateLimiter(req: Request, res: Response, next: NextFunction) {
+  // IP-only key — upload bursts bleed into /health and /login
+  const key = \`rate:\${req.ip}\`;
+
+  try {
+    const current = await redis.incr(key);
+
+    if (current === 1) {
+      await redis.expire(key, WINDOW_SECONDS);
+    }
+
+    res.setHeader('X-RateLimit-Limit', MAX_REQUESTS);
+    res.setHeader('X-RateLimit-Remaining', Math.max(0, MAX_REQUESTS - current));
+    res.setHeader('X-RateLimit-Reset', Date.now() + WINDOW_SECONDS * 1000);
+
+    if (current > MAX_REQUESTS) {
+      return res.status(429).json({ error: 'Too many requests', retryAfter: WINDOW_SECONDS });
+    }
+
+    next();
+  } catch (err) {
+    return res.status(503).json({ error: 'Service temporarily unavailable' });
+  }
+}
+`;
+
+// Mutation F: missing rate limit headers (clients cannot backoff)
+export const MUTATION_F = `
+import { Request, Response, NextFunction } from 'express';
+import { createClient } from 'redis';
+
+const redis = createClient({ url: process.env.REDIS_URL });
+redis.connect();
+
+const WINDOW_SECONDS = 60;
+const MAX_REQUESTS = 100;
+
+export async function rateLimiter(req: Request, res: Response, next: NextFunction) {
+  const key = \`rate:\${req.ip}:\${req.path}\`;
+
+  try {
+    const current = await redis.incr(key);
+
+    if (current === 1) {
+      await redis.expire(key, WINDOW_SECONDS);
+    }
+
+    // No X-RateLimit-Remaining or Retry-After headers — clients can't implement backoff
+    if (current > MAX_REQUESTS) {
+      return res.status(429).json({ error: 'Too many requests' });
+    }
+
+    next();
+  } catch (err) {
+    return res.status(503).json({ error: 'Service temporarily unavailable' });
+  }
+}
+`;
+
+// Mutation G: hardcoded TTL instead of WINDOW_SECONDS constant
+export const MUTATION_G = `
+import { Request, Response, NextFunction } from 'express';
+import { createClient } from 'redis';
+
+const redis = createClient({ url: process.env.REDIS_URL });
+redis.connect();
+
+const WINDOW_SECONDS = 60;
+const MAX_REQUESTS = 100;
+
+export async function rateLimiter(req: Request, res: Response, next: NextFunction) {
+  const key = \`rate:\${req.ip}:\${req.path}\`;
+
+  try {
+    const current = await redis.incr(key);
+
+    if (current === 1) {
+      // Hardcoded 3600 instead of WINDOW_SECONDS — silent drift when config changes
+      await redis.expire(key, 3600);
+    }
+
+    res.setHeader('X-RateLimit-Limit', MAX_REQUESTS);
+    res.setHeader('X-RateLimit-Remaining', Math.max(0, MAX_REQUESTS - current));
+    res.setHeader('Retry-After', WINDOW_SECONDS);
+
+    if (current > MAX_REQUESTS) {
+      return res.status(429).json({ error: 'Too many requests', retryAfter: WINDOW_SECONDS });
+    }
+
+    next();
+  } catch (err) {
+    return res.status(503).json({ error: 'Service temporarily unavailable' });
+  }
+}
+`;
+
 export const PHASE_1_CONSTRAINTS: string[] = [];
 
 export const PHASE_2_CONSTRAINTS = [

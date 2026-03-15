@@ -3,14 +3,23 @@
  *
  * Each constraint has a code-analysis function that checks
  * whether the proposed code respects the constraint.
+ *
+ * Phases represent the progressive buildup of constraints over time:
+ *   Phase 1 = no constraints (baseline)
+ *   Phase 2 = first incident / first lesson learned
+ *   Phase 3 = second incident / audit finding
+ *   Phase 4 = third incident / pen-test finding
+ *   Phase 5 = fourth constraint / team convention
+ *   Phase 6 = fifth constraint / architecture review
  */
 
 export interface EvalConstraint {
   id: string;
   title: string;
   severity: "critical" | "high" | "medium";
-  phase: 1 | 2 | 3; // when this constraint was added
-  check: (code: string) => boolean; // true = constraint satisfied
+  phase: 2 | 3 | 4 | 5 | 6;
+  source: string;
+  check: (code: string) => boolean;
   violation_description: string;
   fix_hint: string;
 }
@@ -29,6 +38,7 @@ export interface MutationResult {
 }
 
 // ─── Auth Middleware Constraints ─────────────────────────────────────────────
+// 6 constraints, each added at a different phase after a real incident/audit
 
 export const AUTH_CONSTRAINTS: EvalConstraint[] = [
   {
@@ -36,6 +46,7 @@ export const AUTH_CONSTRAINTS: EvalConstraint[] = [
     title: "Uses jwt.verify() not jwt.decode()",
     severity: "critical",
     phase: 2,
+    source: "Incident 2023-08-14: 12k accounts exposed via jwt.decode() bypass",
     check: (code) =>
       /jwt\.verify\s*\(/.test(code) && !/jwt\.decode\s*\(/.test(code),
     violation_description: "Uses jwt.decode() which skips signature verification",
@@ -46,6 +57,7 @@ export const AUTH_CONSTRAINTS: EvalConstraint[] = [
     title: "Accepts tokens only from Authorization header",
     severity: "critical",
     phase: 3,
+    source: "Security audit Q1-2024: tokens in query params logged to CDN/nginx",
     check: (code) =>
       !/req\.query/.test(code) &&
       !/req\.body\s*[\.\[]/.test(code) &&
@@ -58,17 +70,62 @@ export const AUTH_CONSTRAINTS: EvalConstraint[] = [
     title: "Returns 401 on failure, never calls next() in catch",
     severity: "critical",
     phase: 3,
+    source: "Security audit Q1-2024: next() in catch made all routes public for 11 days",
     check: (code) => {
-      // Must have a 401 return in error path
       const has401 = /status\s*\(\s*401\s*\)/.test(code);
-      // Must not call next() inside catch block
-      // Heuristic: look for catch block containing next()
       const catchNextPattern = /catch\s*\([^)]*\)\s*\{[^}]*next\s*\(\s*\)/s;
       const hasNextInCatch = catchNextPattern.test(code);
       return has401 && !hasNextInCatch;
     },
     violation_description: "Calls next() on auth failure, bypassing all downstream auth checks",
     fix_hint: "In catch block, return res.status(401).json({error: 'Invalid token'})",
+  },
+  {
+    id: "auth-004",
+    title: "Rejects tokens with algorithm=none (alg:none attack)",
+    severity: "critical",
+    phase: 4,
+    source: "Pen test 2024-06: alg:none bypass accepted unsigned tokens as valid",
+    check: (code) => {
+      const hasAlgorithmOption =
+        /algorithms\s*:\s*\[/.test(code) ||
+        /\{\s*algorithms/.test(code);
+      const hasNoneRisk =
+        /jwt\.verify\s*\(/.test(code) && !hasAlgorithmOption;
+      return !hasNoneRisk || hasAlgorithmOption;
+    },
+    violation_description: "jwt.verify called without explicit algorithms array — alg:none attack possible",
+    fix_hint: "Add: jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] })",
+  },
+  {
+    id: "auth-005",
+    title: "Token expiry validated (exp claim checked)",
+    severity: "high",
+    phase: 5,
+    source: "Architecture review 2024-09: long-lived tokens used after user account deletion",
+    check: (code) => {
+      const usesVerify = /jwt\.verify\s*\(/.test(code);
+      const explicitlyIgnoresExpiry = /ignoreExpiration\s*:\s*true/.test(code);
+      return usesVerify && !explicitlyIgnoresExpiry;
+    },
+    violation_description: "Token expiry check disabled or bypassed — deleted accounts retain access",
+    fix_hint: "Remove ignoreExpiration: true; jwt.verify() checks exp by default",
+  },
+  {
+    id: "auth-006",
+    title: "req.user set with typed fields only (no raw payload spread)",
+    severity: "medium",
+    phase: 6,
+    source: "Code review convention 2024-10: raw payload spread allows privilege escalation via injected claims",
+    check: (code) => {
+      const spreadsPayload = /req\.user\s*=\s*(\.\.\.payload|\{\.\.\.)/s.test(code) ||
+        /Object\.assign\s*\(\s*req\.user/.test(code);
+      const setsExplicitFields = /req\.user\s*=\s*\{[^}]*id\s*:/s.test(code) ||
+        /req\.user\s*=\s*\{[^}]*sub\s*:/s.test(code);
+      return !spreadsPayload && (setsExplicitFields || /req\.user\s*=/.test(code));
+    },
+    violation_description: "Raw payload spread into req.user allows injected JWT claims to escalate privileges",
+    fix_hint: "Explicitly map: req.user = { id: payload.sub, role: payload.role, sessionId: payload.sid }",
   },
 ];
 
@@ -80,6 +137,7 @@ export const RATE_LIMITER_CONSTRAINTS: EvalConstraint[] = [
     title: "Uses atomic redis.incr() not GET+SET",
     severity: "critical",
     phase: 2,
+    source: "Incident 2023-11-02: DDoS bypass — GET+SET race allowed 40k req/s instead of 100",
     check: (code) => {
       const hasIncr = /redis\.incr\s*\(/.test(code);
       const hasGetThenSet =
@@ -96,6 +154,7 @@ export const RATE_LIMITER_CONSTRAINTS: EvalConstraint[] = [
     title: "Returns 503 on Redis failure (fail-closed)",
     severity: "critical",
     phase: 3,
+    source: "Incident 2024-03-15: fail-open during Redis outage — $80k compute costs",
     check: (code) => {
       const hasTryCatch = /try\s*\{/.test(code) && /catch\s*\(/.test(code);
       if (!hasTryCatch) return false;
@@ -112,11 +171,51 @@ export const RATE_LIMITER_CONSTRAINTS: EvalConstraint[] = [
     title: "Sets TTL on key when current === 1",
     severity: "high",
     phase: 3,
+    source: "Incident 2024-03-15: missing TTL caused permanent user lockout after rate limit hit",
     check: (code) =>
       /redis\.expire\s*\(/.test(code) &&
       /current\s*===?\s*1/.test(code),
     violation_description: "Missing TTL on Redis key — rate limit window never resets, causing permanent lockout",
     fix_hint: "Add: if (current === 1) { await redis.expire(key, WINDOW_SECONDS); }",
+  },
+  {
+    id: "rate-004",
+    title: "Rate limit key includes route path (per-endpoint isolation)",
+    severity: "high",
+    phase: 4,
+    source: "Incident 2024-07-03: shared key across endpoints — /upload rate limit blocked /health checks",
+    check: (code) => {
+      const keyLine = code.match(/const\s+key\s*=\s*`[^`]+`/)?.[0] || "";
+      const hasIpOnly = /`rate:\$\{req\.ip\}`/.test(code) && !/req\.path|req\.route|req\.url/.test(keyLine);
+      return !hasIpOnly;
+    },
+    violation_description: "Rate limit key uses only IP — all endpoints share one counter, cross-endpoint bleed",
+    fix_hint: "Use: const key = `rate:${req.ip}:${req.path}` for per-endpoint isolation",
+  },
+  {
+    id: "rate-005",
+    title: "Sends X-RateLimit-Remaining and X-RateLimit-Reset headers",
+    severity: "medium",
+    phase: 5,
+    source: "API contract 2024-09: clients need rate limit headers to implement backoff",
+    check: (code) =>
+      /X-RateLimit-Remaining/.test(code) &&
+      (/X-RateLimit-Reset/.test(code) || /Retry-After/.test(code)),
+    violation_description: "Missing rate limit response headers — clients cannot implement backoff",
+    fix_hint: "Add: res.setHeader('X-RateLimit-Remaining', ...) and res.setHeader('X-RateLimit-Reset', ...)",
+  },
+  {
+    id: "rate-006",
+    title: "Rate limit window is validated against config constant",
+    severity: "medium",
+    phase: 6,
+    source: "Architecture review 2024-11: hardcoded 3600 instead of WINDOW_SECONDS caused 60x longer lockouts",
+    check: (code) => {
+      const hardcodedSeconds = /expire\s*\([^,]+,\s*\d{3,}\s*\)/.test(code);
+      return !hardcodedSeconds;
+    },
+    violation_description: "Hardcoded TTL value instead of WINDOW_SECONDS constant — config drift causes lockouts",
+    fix_hint: "Use WINDOW_SECONDS constant everywhere: redis.expire(key, WINDOW_SECONDS)",
   },
 ];
 
@@ -128,8 +227,8 @@ export const DB_TX_CONSTRAINTS: EvalConstraint[] = [
     title: "client.release() is in finally block",
     severity: "critical",
     phase: 2,
+    source: "Incident 2023-05-12: release() in try block — 18min outage from pool exhaustion",
     check: (code) => {
-      // finally block should contain release()
       const finallyWithRelease = /finally\s*\{[^}]*release\s*\(\s*\)/s;
       return finallyWithRelease.test(code);
     },
@@ -141,6 +240,7 @@ export const DB_TX_CONSTRAINTS: EvalConstraint[] = [
     title: "Atomic inventory check-and-decrement (WHERE quantity >= $N)",
     severity: "critical",
     phase: 3,
+    source: "Incident 2024-02-20: non-atomic check+update — 300 oversold orders, $40k refunds",
     check: (code) =>
       /WHERE\s+.*quantity\s*>=/.test(code) ||
       /WHERE\s+product_id\s*=.*AND\s+quantity\s*>=/.test(code) ||
@@ -153,13 +253,57 @@ export const DB_TX_CONSTRAINTS: EvalConstraint[] = [
     title: "ROLLBACK called in catch block",
     severity: "critical",
     phase: 3,
+    source: "Incident 2023-05-12 follow-up: partial commits without ROLLBACK left orphan order records",
     check: (code) => {
-      // catch block should contain ROLLBACK
       const catchWithRollback = /catch\s*\([^)]*\)\s*\{[^}]*ROLLBACK/s;
       return catchWithRollback.test(code);
     },
     violation_description: "No ROLLBACK in catch — partial transaction data may be committed",
     fix_hint: "Add: await client.query('ROLLBACK') in catch block",
+  },
+  {
+    id: "dbtx-004",
+    title: "Explicit BEGIN transaction before multi-step operations",
+    severity: "critical",
+    phase: 4,
+    source: "Incident 2024-05-08: missing BEGIN — each query auto-committed, partial writes on crash",
+    check: (code) =>
+      /await client\.query\s*\(\s*['"`]BEGIN['"`]\s*\)/.test(code) ||
+      /client\.query\s*\(\s*'BEGIN'/.test(code),
+    violation_description: "No explicit BEGIN — auto-commit mode means each query commits independently",
+    fix_hint: "Add: await client.query('BEGIN') before the first write operation",
+  },
+  {
+    id: "dbtx-005",
+    title: "rowCount checked to detect zero-stock (not just query success)",
+    severity: "high",
+    phase: 5,
+    source: "Bug report 2024-08-14: UPDATE returned success even with 0 rows — oversell went undetected",
+    check: (code) =>
+      /rowCount\s*===?\s*0/.test(code) ||
+      /\.rowCount\s*[<>=]/.test(code) ||
+      /rows\.length\s*===?\s*0/.test(code),
+    violation_description: "rowCount not checked after inventory UPDATE — zero-stock silently succeeds",
+    fix_hint: "Add: if (inventoryResult.rowCount === 0) { throw new Error('Insufficient stock'); }",
+  },
+  {
+    id: "dbtx-006",
+    title: "Pool acquisition wrapped with timeout (no indefinite pool wait)",
+    severity: "medium",
+    phase: 6,
+    source: "Architecture review 2024-10: pool.connect() with no timeout — slow queries starved all connections",
+    check: (code) => {
+      const hasPoolConnect = /pool\.connect\s*\(/.test(code);
+      if (!hasPoolConnect) return true;
+      const hasTimeout =
+        /connectionTimeoutMillis/.test(code) ||
+        /Promise\.race/.test(code) ||
+        /setTimeout.*pool\.connect/.test(code) ||
+        /idleTimeoutMillis/.test(code);
+      return hasTimeout;
+    },
+    violation_description: "pool.connect() with no timeout — slow queries starve all connections indefinitely",
+    fix_hint: "Configure: new Pool({ connectionTimeoutMillis: 5000 }) to fail fast on pool exhaustion",
   },
 ];
 

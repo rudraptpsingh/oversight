@@ -1,5 +1,8 @@
 {
-  "run_date": "2026-03-15T05:44:29.884Z",
+  "run_date": "2026-03-15T08:51:37.145Z",
+  "phases": 6,
+  "mutations_per_scenario": 7,
+  "constraints_per_scenario": 6,
   "scenarios": [
     {
       "scenario_id": "auth",
@@ -11,8 +14,8 @@
           "records_loaded": 0,
           "mutation_results": [
             {
-              "mutation_id": "A",
-              "mutation_label": "Mutation A — accepts req.query token",
+              "mutation_id": "B",
+              "mutation_label": "Mutation B — uses jwt.decode()",
               "phase": 1,
               "constraints_total": 0,
               "constraints_passed": 0,
@@ -23,8 +26,8 @@
               "critical_violations": 0
             },
             {
-              "mutation_id": "B",
-              "mutation_label": "Mutation B — uses jwt.decode()",
+              "mutation_id": "A",
+              "mutation_label": "Mutation A — accepts req.query token",
               "phase": 1,
               "constraints_total": 0,
               "constraints_passed": 0,
@@ -47,6 +50,42 @@
               "critical_violations": 0
             },
             {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — no algorithms option (alg:none)",
+              "phase": 1,
+              "constraints_total": 0,
+              "constraints_passed": 0,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — ignoreExpiration:true",
+              "phase": 1,
+              "constraints_total": 0,
+              "constraints_passed": 0,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — raw payload spread to req.user",
+              "phase": 1,
+              "constraints_total": 0,
+              "constraints_passed": 0,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
               "mutation_id": "D",
               "mutation_label": "Mutation D — correct implementation",
               "phase": 1,
@@ -59,27 +98,15 @@
               "critical_violations": 0
             }
           ],
-          "safe_merges": 4,
-          "total_mutations": 4,
+          "safe_merges": 7,
+          "total_mutations": 7,
           "avg_compliance": 100
         },
         {
           "phase": 2,
-          "phase_label": "Phase 2 — Post-incident #1",
+          "phase_label": "Phase 2 — +Constraint: Uses jwt.verify() not jwt.decode()",
           "records_loaded": 1,
           "mutation_results": [
-            {
-              "mutation_id": "A",
-              "mutation_label": "Mutation A — accepts req.query token",
-              "phase": 2,
-              "constraints_total": 1,
-              "constraints_passed": 1,
-              "constraints_failed": 0,
-              "violations": [],
-              "compliance_pct": 100,
-              "would_merge": true,
-              "critical_violations": 0
-            },
             {
               "mutation_id": "B",
               "mutation_label": "Mutation B — uses jwt.decode()",
@@ -99,8 +126,56 @@
               "critical_violations": 1
             },
             {
+              "mutation_id": "A",
+              "mutation_label": "Mutation A — accepts req.query token",
+              "phase": 2,
+              "constraints_total": 1,
+              "constraints_passed": 1,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
               "mutation_id": "C",
               "mutation_label": "Mutation C — calls next() on failure",
+              "phase": 2,
+              "constraints_total": 1,
+              "constraints_passed": 1,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — no algorithms option (alg:none)",
+              "phase": 2,
+              "constraints_total": 1,
+              "constraints_passed": 1,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — ignoreExpiration:true",
+              "phase": 2,
+              "constraints_total": 1,
+              "constraints_passed": 1,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — raw payload spread to req.user",
               "phase": 2,
               "constraints_total": 1,
               "constraints_passed": 1,
@@ -123,33 +198,15 @@
               "critical_violations": 0
             }
           ],
-          "safe_merges": 3,
-          "total_mutations": 4,
-          "avg_compliance": 75
+          "safe_merges": 6,
+          "total_mutations": 7,
+          "avg_compliance": 86
         },
         {
           "phase": 3,
-          "phase_label": "Phase 3 — Post-audit full constraints",
-          "records_loaded": 3,
+          "phase_label": "Phase 3 — +Constraints: auth-002, auth-003",
+          "records_loaded": 2,
           "mutation_results": [
-            {
-              "mutation_id": "A",
-              "mutation_label": "Mutation A — accepts req.query token",
-              "phase": 3,
-              "constraints_total": 3,
-              "constraints_passed": 2,
-              "constraints_failed": 1,
-              "violations": [
-                {
-                  "id": "auth-002",
-                  "title": "Accepts tokens only from Authorization header",
-                  "severity": "critical"
-                }
-              ],
-              "compliance_pct": 67,
-              "would_merge": false,
-              "critical_violations": 1
-            },
             {
               "mutation_id": "B",
               "mutation_label": "Mutation B — uses jwt.decode()",
@@ -161,6 +218,24 @@
                 {
                   "id": "auth-001",
                   "title": "Uses jwt.verify() not jwt.decode()",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 67,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "A",
+              "mutation_label": "Mutation A — accepts req.query token",
+              "phase": 3,
+              "constraints_total": 3,
+              "constraints_passed": 2,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "auth-002",
+                  "title": "Accepts tokens only from Authorization header",
                   "severity": "critical"
                 }
               ],
@@ -187,6 +262,42 @@
               "critical_violations": 1
             },
             {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — no algorithms option (alg:none)",
+              "phase": 3,
+              "constraints_total": 3,
+              "constraints_passed": 3,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — ignoreExpiration:true",
+              "phase": 3,
+              "constraints_total": 3,
+              "constraints_passed": 3,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — raw payload spread to req.user",
+              "phase": 3,
+              "constraints_total": 3,
+              "constraints_passed": 3,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
               "mutation_id": "D",
               "mutation_label": "Mutation D — correct implementation",
               "phase": 3,
@@ -199,23 +310,430 @@
               "critical_violations": 0
             }
           ],
-          "safe_merges": 1,
-          "total_mutations": 4,
-          "avg_compliance": 75
+          "safe_merges": 4,
+          "total_mutations": 7,
+          "avg_compliance": 86
+        },
+        {
+          "phase": 4,
+          "phase_label": "Phase 4 — +Constraint: Rejects tokens with algorithm=none (alg:none attack)",
+          "records_loaded": 3,
+          "mutation_results": [
+            {
+              "mutation_id": "B",
+              "mutation_label": "Mutation B — uses jwt.decode()",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 3,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "auth-001",
+                  "title": "Uses jwt.verify() not jwt.decode()",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 75,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "A",
+              "mutation_label": "Mutation A — accepts req.query token",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 2,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "auth-002",
+                  "title": "Accepts tokens only from Authorization header",
+                  "severity": "critical"
+                },
+                {
+                  "id": "auth-004",
+                  "title": "Rejects tokens with algorithm=none (alg:none attack)",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 50,
+              "would_merge": false,
+              "critical_violations": 2
+            },
+            {
+              "mutation_id": "C",
+              "mutation_label": "Mutation C — calls next() on failure",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 2,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "auth-003",
+                  "title": "Returns 401 on failure, never calls next() in catch",
+                  "severity": "critical"
+                },
+                {
+                  "id": "auth-004",
+                  "title": "Rejects tokens with algorithm=none (alg:none attack)",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 50,
+              "would_merge": false,
+              "critical_violations": 2
+            },
+            {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — no algorithms option (alg:none)",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 3,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "auth-004",
+                  "title": "Rejects tokens with algorithm=none (alg:none attack)",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 75,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — ignoreExpiration:true",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 4,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — raw payload spread to req.user",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 4,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "D",
+              "mutation_label": "Mutation D — correct implementation",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 4,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            }
+          ],
+          "safe_merges": 3,
+          "total_mutations": 7,
+          "avg_compliance": 79
+        },
+        {
+          "phase": 5,
+          "phase_label": "Phase 5 — +Constraint: Token expiry validated (exp claim checked)",
+          "records_loaded": 4,
+          "mutation_results": [
+            {
+              "mutation_id": "B",
+              "mutation_label": "Mutation B — uses jwt.decode()",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 3,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "auth-001",
+                  "title": "Uses jwt.verify() not jwt.decode()",
+                  "severity": "critical"
+                },
+                {
+                  "id": "auth-005",
+                  "title": "Token expiry validated (exp claim checked)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 60,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "A",
+              "mutation_label": "Mutation A — accepts req.query token",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 3,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "auth-002",
+                  "title": "Accepts tokens only from Authorization header",
+                  "severity": "critical"
+                },
+                {
+                  "id": "auth-004",
+                  "title": "Rejects tokens with algorithm=none (alg:none attack)",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 60,
+              "would_merge": false,
+              "critical_violations": 2
+            },
+            {
+              "mutation_id": "C",
+              "mutation_label": "Mutation C — calls next() on failure",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 3,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "auth-003",
+                  "title": "Returns 401 on failure, never calls next() in catch",
+                  "severity": "critical"
+                },
+                {
+                  "id": "auth-004",
+                  "title": "Rejects tokens with algorithm=none (alg:none attack)",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 60,
+              "would_merge": false,
+              "critical_violations": 2
+            },
+            {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — no algorithms option (alg:none)",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 4,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "auth-004",
+                  "title": "Rejects tokens with algorithm=none (alg:none attack)",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 80,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — ignoreExpiration:true",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 4,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "auth-005",
+                  "title": "Token expiry validated (exp claim checked)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 80,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — raw payload spread to req.user",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 5,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "D",
+              "mutation_label": "Mutation D — correct implementation",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 5,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            }
+          ],
+          "safe_merges": 3,
+          "total_mutations": 7,
+          "avg_compliance": 77
+        },
+        {
+          "phase": 6,
+          "phase_label": "Phase 6 — +Constraint: req.user set with typed fields only (no raw payload spread) (full memory)",
+          "records_loaded": 5,
+          "mutation_results": [
+            {
+              "mutation_id": "B",
+              "mutation_label": "Mutation B — uses jwt.decode()",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 4,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "auth-001",
+                  "title": "Uses jwt.verify() not jwt.decode()",
+                  "severity": "critical"
+                },
+                {
+                  "id": "auth-005",
+                  "title": "Token expiry validated (exp claim checked)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 67,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "A",
+              "mutation_label": "Mutation A — accepts req.query token",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 4,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "auth-002",
+                  "title": "Accepts tokens only from Authorization header",
+                  "severity": "critical"
+                },
+                {
+                  "id": "auth-004",
+                  "title": "Rejects tokens with algorithm=none (alg:none attack)",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 67,
+              "would_merge": false,
+              "critical_violations": 2
+            },
+            {
+              "mutation_id": "C",
+              "mutation_label": "Mutation C — calls next() on failure",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 4,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "auth-003",
+                  "title": "Returns 401 on failure, never calls next() in catch",
+                  "severity": "critical"
+                },
+                {
+                  "id": "auth-004",
+                  "title": "Rejects tokens with algorithm=none (alg:none attack)",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 67,
+              "would_merge": false,
+              "critical_violations": 2
+            },
+            {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — no algorithms option (alg:none)",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 5,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "auth-004",
+                  "title": "Rejects tokens with algorithm=none (alg:none attack)",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 83,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — ignoreExpiration:true",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 5,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "auth-005",
+                  "title": "Token expiry validated (exp claim checked)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 83,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — raw payload spread to req.user",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 6,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "D",
+              "mutation_label": "Mutation D — correct implementation",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 6,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            }
+          ],
+          "safe_merges": 3,
+          "total_mutations": 7,
+          "avg_compliance": 81
         }
       ],
       "recording": {
         "scenario_id": "auth",
-        "records_inserted": 3,
+        "records_inserted": 6,
         "all_have_source": true,
         "all_active": true,
         "anchors_correct": true,
         "source_origins": [
           "incident",
           "pr-discussion",
-          "code-review"
+          "code-review",
+          "agent-decision"
         ],
-        "avg_constraints": 2,
+        "avg_constraints": 1,
         "avg_hints": 2,
         "passed": true
       },
@@ -250,16 +768,16 @@
         "scenario_id": "auth",
         "mutations": [
           {
-            "mutation_id": "A",
-            "label": "Mutation A — accepts req.query token",
+            "mutation_id": "B",
+            "label": "Mutation B — uses jwt.decode()",
             "without_whycode_passes": true,
             "with_whycode_passes": false,
             "whycode_caught_bug": true,
             "is_correct": false
           },
           {
-            "mutation_id": "B",
-            "label": "Mutation B — uses jwt.decode()",
+            "mutation_id": "A",
+            "label": "Mutation A — accepts req.query token",
             "without_whycode_passes": true,
             "with_whycode_passes": false,
             "whycode_caught_bug": true,
@@ -274,6 +792,30 @@
             "is_correct": false
           },
           {
+            "mutation_id": "E",
+            "label": "Mutation E — no algorithms option (alg:none)",
+            "without_whycode_passes": true,
+            "with_whycode_passes": false,
+            "whycode_caught_bug": true,
+            "is_correct": false
+          },
+          {
+            "mutation_id": "F",
+            "label": "Mutation F — ignoreExpiration:true",
+            "without_whycode_passes": true,
+            "with_whycode_passes": true,
+            "whycode_caught_bug": false,
+            "is_correct": false
+          },
+          {
+            "mutation_id": "G",
+            "label": "Mutation G — raw payload spread to req.user",
+            "without_whycode_passes": true,
+            "with_whycode_passes": true,
+            "whycode_caught_bug": false,
+            "is_correct": false
+          },
+          {
             "mutation_id": "D",
             "label": "Mutation D — correct implementation",
             "without_whycode_passes": true,
@@ -282,10 +824,10 @@
             "is_correct": true
           }
         ],
-        "bad_merges_baseline": 3,
-        "bad_merges_with_whycode": 0,
-        "bugs_caught": 3,
-        "improvement_pct": 100,
+        "bad_merges_baseline": 6,
+        "bad_merges_with_whycode": 2,
+        "bugs_caught": 4,
+        "improvement_pct": 67,
         "false_negatives": 0
       }
     },
@@ -311,6 +853,18 @@
               "critical_violations": 0
             },
             {
+              "mutation_id": "C",
+              "mutation_label": "Mutation C — next() on Redis failure",
+              "phase": 1,
+              "constraints_total": 0,
+              "constraints_passed": 0,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
               "mutation_id": "B",
               "mutation_label": "Mutation B — no TTL set",
               "phase": 1,
@@ -323,8 +877,32 @@
               "critical_violations": 0
             },
             {
-              "mutation_id": "C",
-              "mutation_label": "Mutation C — next() on Redis failure",
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — IP-only key (cross-endpoint bleed)",
+              "phase": 1,
+              "constraints_total": 0,
+              "constraints_passed": 0,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — missing rate limit headers",
+              "phase": 1,
+              "constraints_total": 0,
+              "constraints_passed": 0,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — hardcoded TTL value",
               "phase": 1,
               "constraints_total": 0,
               "constraints_passed": 0,
@@ -347,13 +925,13 @@
               "critical_violations": 0
             }
           ],
-          "safe_merges": 4,
-          "total_mutations": 4,
+          "safe_merges": 7,
+          "total_mutations": 7,
           "avg_compliance": 100
         },
         {
           "phase": 2,
-          "phase_label": "Phase 2 — Post-incident #1",
+          "phase_label": "Phase 2 — +Constraint: Uses atomic redis.incr() not GET+SET",
           "records_loaded": 1,
           "mutation_results": [
             {
@@ -375,6 +953,18 @@
               "critical_violations": 1
             },
             {
+              "mutation_id": "C",
+              "mutation_label": "Mutation C — next() on Redis failure",
+              "phase": 2,
+              "constraints_total": 1,
+              "constraints_passed": 1,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
               "mutation_id": "B",
               "mutation_label": "Mutation B — no TTL set",
               "phase": 2,
@@ -387,8 +977,32 @@
               "critical_violations": 0
             },
             {
-              "mutation_id": "C",
-              "mutation_label": "Mutation C — next() on Redis failure",
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — IP-only key (cross-endpoint bleed)",
+              "phase": 2,
+              "constraints_total": 1,
+              "constraints_passed": 1,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — missing rate limit headers",
+              "phase": 2,
+              "constraints_total": 1,
+              "constraints_passed": 1,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — hardcoded TTL value",
               "phase": 2,
               "constraints_total": 1,
               "constraints_passed": 1,
@@ -411,14 +1025,14 @@
               "critical_violations": 0
             }
           ],
-          "safe_merges": 3,
-          "total_mutations": 4,
-          "avg_compliance": 75
+          "safe_merges": 6,
+          "total_mutations": 7,
+          "avg_compliance": 86
         },
         {
           "phase": 3,
-          "phase_label": "Phase 3 — Post-audit full constraints",
-          "records_loaded": 3,
+          "phase_label": "Phase 3 — +Constraints: rate-002, rate-003",
+          "records_loaded": 2,
           "mutation_results": [
             {
               "mutation_id": "A",
@@ -449,6 +1063,24 @@
               "critical_violations": 2
             },
             {
+              "mutation_id": "C",
+              "mutation_label": "Mutation C — next() on Redis failure",
+              "phase": 3,
+              "constraints_total": 3,
+              "constraints_passed": 2,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "rate-002",
+                  "title": "Returns 503 on Redis failure (fail-closed)",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 67,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
               "mutation_id": "B",
               "mutation_label": "Mutation B — no TTL set",
               "phase": 3,
@@ -472,22 +1104,40 @@
               "critical_violations": 1
             },
             {
-              "mutation_id": "C",
-              "mutation_label": "Mutation C — next() on Redis failure",
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — IP-only key (cross-endpoint bleed)",
               "phase": 3,
               "constraints_total": 3,
-              "constraints_passed": 2,
-              "constraints_failed": 1,
-              "violations": [
-                {
-                  "id": "rate-002",
-                  "title": "Returns 503 on Redis failure (fail-closed)",
-                  "severity": "critical"
-                }
-              ],
-              "compliance_pct": 67,
-              "would_merge": false,
-              "critical_violations": 1
+              "constraints_passed": 3,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — missing rate limit headers",
+              "phase": 3,
+              "constraints_total": 3,
+              "constraints_passed": 3,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — hardcoded TTL value",
+              "phase": 3,
+              "constraints_total": 3,
+              "constraints_passed": 3,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
             },
             {
               "mutation_id": "D",
@@ -502,20 +1152,529 @@
               "critical_violations": 0
             }
           ],
-          "safe_merges": 1,
-          "total_mutations": 4,
-          "avg_compliance": 50
+          "safe_merges": 4,
+          "total_mutations": 7,
+          "avg_compliance": 71
+        },
+        {
+          "phase": 4,
+          "phase_label": "Phase 4 — +Constraint: Rate limit key includes route path (per-endpoint isolation)",
+          "records_loaded": 3,
+          "mutation_results": [
+            {
+              "mutation_id": "A",
+              "mutation_label": "Mutation A — GET+SET race condition",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 0,
+              "constraints_failed": 4,
+              "violations": [
+                {
+                  "id": "rate-001",
+                  "title": "Uses atomic redis.incr() not GET+SET",
+                  "severity": "critical"
+                },
+                {
+                  "id": "rate-002",
+                  "title": "Returns 503 on Redis failure (fail-closed)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "rate-003",
+                  "title": "Sets TTL on key when current === 1",
+                  "severity": "high"
+                },
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 0,
+              "would_merge": false,
+              "critical_violations": 2
+            },
+            {
+              "mutation_id": "C",
+              "mutation_label": "Mutation C — next() on Redis failure",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 2,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "rate-002",
+                  "title": "Returns 503 on Redis failure (fail-closed)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 50,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "B",
+              "mutation_label": "Mutation B — no TTL set",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 1,
+              "constraints_failed": 3,
+              "violations": [
+                {
+                  "id": "rate-002",
+                  "title": "Returns 503 on Redis failure (fail-closed)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "rate-003",
+                  "title": "Sets TTL on key when current === 1",
+                  "severity": "high"
+                },
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 25,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — IP-only key (cross-endpoint bleed)",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 3,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 75,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — missing rate limit headers",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 4,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — hardcoded TTL value",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 4,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "D",
+              "mutation_label": "Mutation D — correct implementation",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 3,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 75,
+              "would_merge": true,
+              "critical_violations": 0
+            }
+          ],
+          "safe_merges": 4,
+          "total_mutations": 7,
+          "avg_compliance": 61
+        },
+        {
+          "phase": 5,
+          "phase_label": "Phase 5 — +Constraint: Sends X-RateLimit-Remaining and X-RateLimit-Reset headers",
+          "records_loaded": 4,
+          "mutation_results": [
+            {
+              "mutation_id": "A",
+              "mutation_label": "Mutation A — GET+SET race condition",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 0,
+              "constraints_failed": 5,
+              "violations": [
+                {
+                  "id": "rate-001",
+                  "title": "Uses atomic redis.incr() not GET+SET",
+                  "severity": "critical"
+                },
+                {
+                  "id": "rate-002",
+                  "title": "Returns 503 on Redis failure (fail-closed)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "rate-003",
+                  "title": "Sets TTL on key when current === 1",
+                  "severity": "high"
+                },
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                },
+                {
+                  "id": "rate-005",
+                  "title": "Sends X-RateLimit-Remaining and X-RateLimit-Reset headers",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 0,
+              "would_merge": false,
+              "critical_violations": 2
+            },
+            {
+              "mutation_id": "C",
+              "mutation_label": "Mutation C — next() on Redis failure",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 2,
+              "constraints_failed": 3,
+              "violations": [
+                {
+                  "id": "rate-002",
+                  "title": "Returns 503 on Redis failure (fail-closed)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                },
+                {
+                  "id": "rate-005",
+                  "title": "Sends X-RateLimit-Remaining and X-RateLimit-Reset headers",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 40,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "B",
+              "mutation_label": "Mutation B — no TTL set",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 1,
+              "constraints_failed": 4,
+              "violations": [
+                {
+                  "id": "rate-002",
+                  "title": "Returns 503 on Redis failure (fail-closed)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "rate-003",
+                  "title": "Sets TTL on key when current === 1",
+                  "severity": "high"
+                },
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                },
+                {
+                  "id": "rate-005",
+                  "title": "Sends X-RateLimit-Remaining and X-RateLimit-Reset headers",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 20,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — IP-only key (cross-endpoint bleed)",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 4,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 80,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — missing rate limit headers",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 5,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — hardcoded TTL value",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 5,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "D",
+              "mutation_label": "Mutation D — correct implementation",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 3,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                },
+                {
+                  "id": "rate-005",
+                  "title": "Sends X-RateLimit-Remaining and X-RateLimit-Reset headers",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 60,
+              "would_merge": true,
+              "critical_violations": 0
+            }
+          ],
+          "safe_merges": 4,
+          "total_mutations": 7,
+          "avg_compliance": 57
+        },
+        {
+          "phase": 6,
+          "phase_label": "Phase 6 — +Constraint: Rate limit window is validated against config constant (full memory)",
+          "records_loaded": 5,
+          "mutation_results": [
+            {
+              "mutation_id": "A",
+              "mutation_label": "Mutation A — GET+SET race condition",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 1,
+              "constraints_failed": 5,
+              "violations": [
+                {
+                  "id": "rate-001",
+                  "title": "Uses atomic redis.incr() not GET+SET",
+                  "severity": "critical"
+                },
+                {
+                  "id": "rate-002",
+                  "title": "Returns 503 on Redis failure (fail-closed)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "rate-003",
+                  "title": "Sets TTL on key when current === 1",
+                  "severity": "high"
+                },
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                },
+                {
+                  "id": "rate-005",
+                  "title": "Sends X-RateLimit-Remaining and X-RateLimit-Reset headers",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 17,
+              "would_merge": false,
+              "critical_violations": 2
+            },
+            {
+              "mutation_id": "C",
+              "mutation_label": "Mutation C — next() on Redis failure",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 3,
+              "constraints_failed": 3,
+              "violations": [
+                {
+                  "id": "rate-002",
+                  "title": "Returns 503 on Redis failure (fail-closed)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                },
+                {
+                  "id": "rate-005",
+                  "title": "Sends X-RateLimit-Remaining and X-RateLimit-Reset headers",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 50,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "B",
+              "mutation_label": "Mutation B — no TTL set",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 2,
+              "constraints_failed": 4,
+              "violations": [
+                {
+                  "id": "rate-002",
+                  "title": "Returns 503 on Redis failure (fail-closed)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "rate-003",
+                  "title": "Sets TTL on key when current === 1",
+                  "severity": "high"
+                },
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                },
+                {
+                  "id": "rate-005",
+                  "title": "Sends X-RateLimit-Remaining and X-RateLimit-Reset headers",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 33,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — IP-only key (cross-endpoint bleed)",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 5,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 83,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — missing rate limit headers",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 6,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — hardcoded TTL value",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 5,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "rate-006",
+                  "title": "Rate limit window is validated against config constant",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 83,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "D",
+              "mutation_label": "Mutation D — correct implementation",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 4,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "rate-004",
+                  "title": "Rate limit key includes route path (per-endpoint isolation)",
+                  "severity": "high"
+                },
+                {
+                  "id": "rate-005",
+                  "title": "Sends X-RateLimit-Remaining and X-RateLimit-Reset headers",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 67,
+              "would_merge": true,
+              "critical_violations": 0
+            }
+          ],
+          "safe_merges": 4,
+          "total_mutations": 7,
+          "avg_compliance": 62
         }
       ],
       "recording": {
         "scenario_id": "rate",
-        "records_inserted": 3,
+        "records_inserted": 6,
         "all_have_source": true,
         "all_active": true,
         "anchors_correct": true,
         "source_origins": [
           "incident",
-          "user-chat"
+          "user-chat",
+          "agent-decision"
         ],
         "avg_constraints": 1,
         "avg_hints": 2,
@@ -560,6 +1719,14 @@
             "is_correct": false
           },
           {
+            "mutation_id": "C",
+            "label": "Mutation C — next() on Redis failure",
+            "without_whycode_passes": true,
+            "with_whycode_passes": false,
+            "whycode_caught_bug": true,
+            "is_correct": false
+          },
+          {
             "mutation_id": "B",
             "label": "Mutation B — no TTL set",
             "without_whycode_passes": true,
@@ -568,11 +1735,27 @@
             "is_correct": false
           },
           {
-            "mutation_id": "C",
-            "label": "Mutation C — next() on Redis failure",
+            "mutation_id": "E",
+            "label": "Mutation E — IP-only key (cross-endpoint bleed)",
             "without_whycode_passes": true,
-            "with_whycode_passes": false,
-            "whycode_caught_bug": true,
+            "with_whycode_passes": true,
+            "whycode_caught_bug": false,
+            "is_correct": false
+          },
+          {
+            "mutation_id": "F",
+            "label": "Mutation F — missing rate limit headers",
+            "without_whycode_passes": true,
+            "with_whycode_passes": true,
+            "whycode_caught_bug": false,
+            "is_correct": false
+          },
+          {
+            "mutation_id": "G",
+            "label": "Mutation G — hardcoded TTL value",
+            "without_whycode_passes": true,
+            "with_whycode_passes": true,
+            "whycode_caught_bug": false,
             "is_correct": false
           },
           {
@@ -584,10 +1767,10 @@
             "is_correct": true
           }
         ],
-        "bad_merges_baseline": 3,
-        "bad_merges_with_whycode": 0,
+        "bad_merges_baseline": 6,
+        "bad_merges_with_whycode": 3,
         "bugs_caught": 3,
-        "improvement_pct": 100,
+        "improvement_pct": 50,
         "false_negatives": 0
       }
     },
@@ -637,6 +1820,42 @@
               "critical_violations": 0
             },
             {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — missing BEGIN (auto-commit)",
+              "phase": 1,
+              "constraints_total": 0,
+              "constraints_passed": 0,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — rowCount not checked",
+              "phase": 1,
+              "constraints_total": 0,
+              "constraints_passed": 0,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — no connectionTimeoutMillis",
+              "phase": 1,
+              "constraints_total": 0,
+              "constraints_passed": 0,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
               "mutation_id": "D",
               "mutation_label": "Mutation D — correct implementation",
               "phase": 1,
@@ -649,13 +1868,13 @@
               "critical_violations": 0
             }
           ],
-          "safe_merges": 4,
-          "total_mutations": 4,
+          "safe_merges": 7,
+          "total_mutations": 7,
           "avg_compliance": 100
         },
         {
           "phase": 2,
-          "phase_label": "Phase 2 — Post-incident #1",
+          "phase_label": "Phase 2 — +Constraint: client.release() is in finally block",
           "records_loaded": 1,
           "mutation_results": [
             {
@@ -707,6 +1926,42 @@
               "critical_violations": 0
             },
             {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — missing BEGIN (auto-commit)",
+              "phase": 2,
+              "constraints_total": 1,
+              "constraints_passed": 1,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — rowCount not checked",
+              "phase": 2,
+              "constraints_total": 1,
+              "constraints_passed": 1,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — no connectionTimeoutMillis",
+              "phase": 2,
+              "constraints_total": 1,
+              "constraints_passed": 1,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
               "mutation_id": "D",
               "mutation_label": "Mutation D — correct implementation",
               "phase": 2,
@@ -719,14 +1974,14 @@
               "critical_violations": 0
             }
           ],
-          "safe_merges": 2,
-          "total_mutations": 4,
-          "avg_compliance": 50
+          "safe_merges": 5,
+          "total_mutations": 7,
+          "avg_compliance": 71
         },
         {
           "phase": 3,
-          "phase_label": "Phase 3 — Post-audit full constraints",
-          "records_loaded": 3,
+          "phase_label": "Phase 3 — +Constraints: dbtx-002, dbtx-003",
+          "records_loaded": 2,
           "mutation_results": [
             {
               "mutation_id": "A",
@@ -798,6 +2053,42 @@
               "critical_violations": 1
             },
             {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — missing BEGIN (auto-commit)",
+              "phase": 3,
+              "constraints_total": 3,
+              "constraints_passed": 3,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — rowCount not checked",
+              "phase": 3,
+              "constraints_total": 3,
+              "constraints_passed": 3,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — no connectionTimeoutMillis",
+              "phase": 3,
+              "constraints_total": 3,
+              "constraints_passed": 3,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
               "mutation_id": "D",
               "mutation_label": "Mutation D — correct implementation",
               "phase": 3,
@@ -810,23 +2101,496 @@
               "critical_violations": 0
             }
           ],
-          "safe_merges": 1,
-          "total_mutations": 4,
-          "avg_compliance": 50
+          "safe_merges": 4,
+          "total_mutations": 7,
+          "avg_compliance": 71
+        },
+        {
+          "phase": 4,
+          "phase_label": "Phase 4 — +Constraint: Explicit BEGIN transaction before multi-step operations",
+          "records_loaded": 3,
+          "mutation_results": [
+            {
+              "mutation_id": "A",
+              "mutation_label": "Mutation A — no try/catch, no release",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 1,
+              "constraints_failed": 3,
+              "violations": [
+                {
+                  "id": "dbtx-001",
+                  "title": "client.release() is in finally block",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-002",
+                  "title": "Atomic inventory check-and-decrement (WHERE quantity >= $N)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-003",
+                  "title": "ROLLBACK called in catch block",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 25,
+              "would_merge": false,
+              "critical_violations": 3
+            },
+            {
+              "mutation_id": "B",
+              "mutation_label": "Mutation B — release before ROLLBACK",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 2,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "dbtx-001",
+                  "title": "client.release() is in finally block",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-002",
+                  "title": "Atomic inventory check-and-decrement (WHERE quantity >= $N)",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 50,
+              "would_merge": false,
+              "critical_violations": 2
+            },
+            {
+              "mutation_id": "C",
+              "mutation_label": "Mutation C — no atomic inventory check",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 3,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "dbtx-002",
+                  "title": "Atomic inventory check-and-decrement (WHERE quantity >= $N)",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 75,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — missing BEGIN (auto-commit)",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 3,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "dbtx-004",
+                  "title": "Explicit BEGIN transaction before multi-step operations",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 75,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — rowCount not checked",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 4,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — no connectionTimeoutMillis",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 4,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "D",
+              "mutation_label": "Mutation D — correct implementation",
+              "phase": 4,
+              "constraints_total": 4,
+              "constraints_passed": 4,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            }
+          ],
+          "safe_merges": 3,
+          "total_mutations": 7,
+          "avg_compliance": 75
+        },
+        {
+          "phase": 5,
+          "phase_label": "Phase 5 — +Constraint: rowCount checked to detect zero-stock (not just query success)",
+          "records_loaded": 4,
+          "mutation_results": [
+            {
+              "mutation_id": "A",
+              "mutation_label": "Mutation A — no try/catch, no release",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 1,
+              "constraints_failed": 4,
+              "violations": [
+                {
+                  "id": "dbtx-001",
+                  "title": "client.release() is in finally block",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-002",
+                  "title": "Atomic inventory check-and-decrement (WHERE quantity >= $N)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-003",
+                  "title": "ROLLBACK called in catch block",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-005",
+                  "title": "rowCount checked to detect zero-stock (not just query success)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 20,
+              "would_merge": false,
+              "critical_violations": 3
+            },
+            {
+              "mutation_id": "B",
+              "mutation_label": "Mutation B — release before ROLLBACK",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 2,
+              "constraints_failed": 3,
+              "violations": [
+                {
+                  "id": "dbtx-001",
+                  "title": "client.release() is in finally block",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-002",
+                  "title": "Atomic inventory check-and-decrement (WHERE quantity >= $N)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-005",
+                  "title": "rowCount checked to detect zero-stock (not just query success)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 40,
+              "would_merge": false,
+              "critical_violations": 2
+            },
+            {
+              "mutation_id": "C",
+              "mutation_label": "Mutation C — no atomic inventory check",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 3,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "dbtx-002",
+                  "title": "Atomic inventory check-and-decrement (WHERE quantity >= $N)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-005",
+                  "title": "rowCount checked to detect zero-stock (not just query success)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 60,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — missing BEGIN (auto-commit)",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 4,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "dbtx-004",
+                  "title": "Explicit BEGIN transaction before multi-step operations",
+                  "severity": "critical"
+                }
+              ],
+              "compliance_pct": 80,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — rowCount not checked",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 4,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "dbtx-005",
+                  "title": "rowCount checked to detect zero-stock (not just query success)",
+                  "severity": "high"
+                }
+              ],
+              "compliance_pct": 80,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — no connectionTimeoutMillis",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 5,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "D",
+              "mutation_label": "Mutation D — correct implementation",
+              "phase": 5,
+              "constraints_total": 5,
+              "constraints_passed": 5,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            }
+          ],
+          "safe_merges": 3,
+          "total_mutations": 7,
+          "avg_compliance": 69
+        },
+        {
+          "phase": 6,
+          "phase_label": "Phase 6 — +Constraint: Pool acquisition wrapped with timeout (no indefinite pool wait) (full memory)",
+          "records_loaded": 5,
+          "mutation_results": [
+            {
+              "mutation_id": "A",
+              "mutation_label": "Mutation A — no try/catch, no release",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 1,
+              "constraints_failed": 5,
+              "violations": [
+                {
+                  "id": "dbtx-001",
+                  "title": "client.release() is in finally block",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-002",
+                  "title": "Atomic inventory check-and-decrement (WHERE quantity >= $N)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-003",
+                  "title": "ROLLBACK called in catch block",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-005",
+                  "title": "rowCount checked to detect zero-stock (not just query success)",
+                  "severity": "high"
+                },
+                {
+                  "id": "dbtx-006",
+                  "title": "Pool acquisition wrapped with timeout (no indefinite pool wait)",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 17,
+              "would_merge": false,
+              "critical_violations": 3
+            },
+            {
+              "mutation_id": "B",
+              "mutation_label": "Mutation B — release before ROLLBACK",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 2,
+              "constraints_failed": 4,
+              "violations": [
+                {
+                  "id": "dbtx-001",
+                  "title": "client.release() is in finally block",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-002",
+                  "title": "Atomic inventory check-and-decrement (WHERE quantity >= $N)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-005",
+                  "title": "rowCount checked to detect zero-stock (not just query success)",
+                  "severity": "high"
+                },
+                {
+                  "id": "dbtx-006",
+                  "title": "Pool acquisition wrapped with timeout (no indefinite pool wait)",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 33,
+              "would_merge": false,
+              "critical_violations": 2
+            },
+            {
+              "mutation_id": "C",
+              "mutation_label": "Mutation C — no atomic inventory check",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 3,
+              "constraints_failed": 3,
+              "violations": [
+                {
+                  "id": "dbtx-002",
+                  "title": "Atomic inventory check-and-decrement (WHERE quantity >= $N)",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-005",
+                  "title": "rowCount checked to detect zero-stock (not just query success)",
+                  "severity": "high"
+                },
+                {
+                  "id": "dbtx-006",
+                  "title": "Pool acquisition wrapped with timeout (no indefinite pool wait)",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 50,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "E",
+              "mutation_label": "Mutation E — missing BEGIN (auto-commit)",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 4,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "dbtx-004",
+                  "title": "Explicit BEGIN transaction before multi-step operations",
+                  "severity": "critical"
+                },
+                {
+                  "id": "dbtx-006",
+                  "title": "Pool acquisition wrapped with timeout (no indefinite pool wait)",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 67,
+              "would_merge": false,
+              "critical_violations": 1
+            },
+            {
+              "mutation_id": "F",
+              "mutation_label": "Mutation F — rowCount not checked",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 4,
+              "constraints_failed": 2,
+              "violations": [
+                {
+                  "id": "dbtx-005",
+                  "title": "rowCount checked to detect zero-stock (not just query success)",
+                  "severity": "high"
+                },
+                {
+                  "id": "dbtx-006",
+                  "title": "Pool acquisition wrapped with timeout (no indefinite pool wait)",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 67,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "G",
+              "mutation_label": "Mutation G — no connectionTimeoutMillis",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 6,
+              "constraints_failed": 0,
+              "violations": [],
+              "compliance_pct": 100,
+              "would_merge": true,
+              "critical_violations": 0
+            },
+            {
+              "mutation_id": "D",
+              "mutation_label": "Mutation D — correct implementation",
+              "phase": 6,
+              "constraints_total": 6,
+              "constraints_passed": 5,
+              "constraints_failed": 1,
+              "violations": [
+                {
+                  "id": "dbtx-006",
+                  "title": "Pool acquisition wrapped with timeout (no indefinite pool wait)",
+                  "severity": "medium"
+                }
+              ],
+              "compliance_pct": 83,
+              "would_merge": true,
+              "critical_violations": 0
+            }
+          ],
+          "safe_merges": 3,
+          "total_mutations": 7,
+          "avg_compliance": 60
         }
       ],
       "recording": {
         "scenario_id": "dbtx",
-        "records_inserted": 3,
+        "records_inserted": 6,
         "all_have_source": true,
         "all_active": true,
         "anchors_correct": true,
         "source_origins": [
           "incident",
-          "code-review"
+          "code-review",
+          "agent-decision"
         ],
-        "avg_constraints": 2,
-        "avg_hints": 3,
+        "avg_constraints": 1,
+        "avg_hints": 2,
         "passed": true
       },
       "dedup": {
@@ -884,6 +2648,30 @@
             "is_correct": false
           },
           {
+            "mutation_id": "E",
+            "label": "Mutation E — missing BEGIN (auto-commit)",
+            "without_whycode_passes": true,
+            "with_whycode_passes": false,
+            "whycode_caught_bug": true,
+            "is_correct": false
+          },
+          {
+            "mutation_id": "F",
+            "label": "Mutation F — rowCount not checked",
+            "without_whycode_passes": true,
+            "with_whycode_passes": true,
+            "whycode_caught_bug": false,
+            "is_correct": false
+          },
+          {
+            "mutation_id": "G",
+            "label": "Mutation G — no connectionTimeoutMillis",
+            "without_whycode_passes": true,
+            "with_whycode_passes": true,
+            "whycode_caught_bug": false,
+            "is_correct": false
+          },
+          {
             "mutation_id": "D",
             "label": "Mutation D — correct implementation",
             "without_whycode_passes": true,
@@ -892,28 +2680,67 @@
             "is_correct": true
           }
         ],
-        "bad_merges_baseline": 3,
-        "bad_merges_with_whycode": 0,
-        "bugs_caught": 3,
-        "improvement_pct": 100,
+        "bad_merges_baseline": 6,
+        "bad_merges_with_whycode": 2,
+        "bugs_caught": 4,
+        "improvement_pct": 67,
         "false_negatives": 0
       }
     }
   ],
   "summary": {
-    "dim1_constraint_blocking": {
-      "phase1_block_rate_pct": 0,
-      "phase3_block_rate_pct": 100,
-      "improvement_pct": 100,
-      "false_negative_rate_pct": 0
-    },
+    "dim1_progressive_blocking": [
+      {
+        "phase": 1,
+        "label": "Phase 1 (baseline — 0 constraints)",
+        "blocked": 0,
+        "total_wrong": 18,
+        "block_rate_pct": 0
+      },
+      {
+        "phase": 2,
+        "label": "Phase 2 (+1 constraint, post-incident #1)",
+        "blocked": 4,
+        "total_wrong": 18,
+        "block_rate_pct": 22
+      },
+      {
+        "phase": 3,
+        "label": "Phase 3 (+2 more constraints, audit)",
+        "blocked": 9,
+        "total_wrong": 18,
+        "block_rate_pct": 50
+      },
+      {
+        "phase": 4,
+        "label": "Phase 4 (+1 constraint, pen test)",
+        "blocked": 11,
+        "total_wrong": 18,
+        "block_rate_pct": 61
+      },
+      {
+        "phase": 5,
+        "label": "Phase 5 (+1 constraint, arch review)",
+        "blocked": 11,
+        "total_wrong": 18,
+        "block_rate_pct": 61
+      },
+      {
+        "phase": 6,
+        "label": "Phase 6 (+1 constraint, code review)",
+        "blocked": 11,
+        "total_wrong": 18,
+        "block_rate_pct": 61
+      }
+    ],
     "dim2_recording": {
-      "total_records": 9,
+      "total_records": 18,
       "source_coverage_pct": 100,
       "origins": [
         "incident",
         "pr-discussion",
         "code-review",
+        "agent-decision",
         "user-chat"
       ],
       "scenarios_passed": 3
@@ -924,10 +2751,11 @@
       "accuracy_pct": 100
     },
     "dim4_agent_improvement": {
-      "bad_merges_without_whycode": 9,
-      "bad_merges_with_whycode": 0,
-      "improvement_pct": 100,
+      "bad_merges_without_whycode": 18,
+      "bad_merges_with_whycode": 7,
+      "improvement_pct": 61,
       "false_negatives": 0
-    }
+    },
+    "total_preventable_cost_usd": 1455000
   }
 }

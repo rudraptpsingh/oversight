@@ -261,6 +261,147 @@ export async function createOrder(
 }
 `;
 
+// Mutation E: missing BEGIN — each query auto-commits, no atomicity
+export const MUTATION_E = `
+import { Pool, PoolClient } from 'pg';
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+export interface OrderItem {
+  productId: string;
+  quantity: number;
+  price: number;
+}
+
+export async function createOrder(
+  userId: string,
+  items: OrderItem[]
+): Promise<{ orderId: string }> {
+  const client = await pool.connect();
+
+  try {
+    // Missing BEGIN — each query auto-commits independently
+    const orderResult = await client.query(
+      'INSERT INTO orders (user_id, status, total) VALUES ($1, $2, $3) RETURNING id',
+      [userId, 'pending', items.reduce((sum, i) => sum + i.price * i.quantity, 0)]
+    );
+    const orderId = orderResult.rows[0].id;
+
+    for (const item of items) {
+      const inventoryResult = await client.query(
+        'UPDATE inventory SET quantity = quantity - $1 WHERE product_id = $2 AND quantity >= $1 RETURNING quantity',
+        [item.quantity, item.productId]
+      );
+      if (inventoryResult.rowCount === 0) {
+        throw new Error(\`Insufficient inventory for product \${item.productId}\`);
+      }
+    }
+
+    return { orderId };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+`;
+
+// Mutation F: rowCount not checked after inventory UPDATE (oversell goes undetected)
+export const MUTATION_F = `
+import { Pool, PoolClient } from 'pg';
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+export interface OrderItem {
+  productId: string;
+  quantity: number;
+  price: number;
+}
+
+export async function createOrder(
+  userId: string,
+  items: OrderItem[]
+): Promise<{ orderId: string }> {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const orderResult = await client.query(
+      'INSERT INTO orders (user_id, status, total) VALUES ($1, $2, $3) RETURNING id',
+      [userId, 'pending', items.reduce((sum, i) => sum + i.price * i.quantity, 0)]
+    );
+    const orderId = orderResult.rows[0].id;
+
+    for (const item of items) {
+      // rowCount never checked — 0-row UPDATE (zero stock) silently succeeds
+      await client.query(
+        'UPDATE inventory SET quantity = quantity - $1 WHERE product_id = $2 AND quantity >= $1',
+        [item.quantity, item.productId]
+      );
+    }
+
+    await client.query('COMMIT');
+    return { orderId };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+`;
+
+// Mutation G: pool created without connectionTimeoutMillis (indefinite waits under load)
+export const MUTATION_G = `
+import { Pool, PoolClient } from 'pg';
+
+// No connectionTimeoutMillis — pool.connect() waits forever under slow-query load
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+export interface OrderItem {
+  productId: string;
+  quantity: number;
+  price: number;
+}
+
+export async function createOrder(
+  userId: string,
+  items: OrderItem[]
+): Promise<{ orderId: string }> {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    const orderResult = await client.query(
+      'INSERT INTO orders (user_id, status, total) VALUES ($1, $2, $3) RETURNING id',
+      [userId, 'pending', items.reduce((sum, i) => sum + i.price * i.quantity, 0)]
+    );
+    const orderId = orderResult.rows[0].id;
+
+    for (const item of items) {
+      const inventoryResult = await client.query(
+        'UPDATE inventory SET quantity = quantity - $1 WHERE product_id = $2 AND quantity >= $1 RETURNING quantity',
+        [item.quantity, item.productId]
+      );
+      if (inventoryResult.rowCount === 0) {
+        throw new Error(\`Insufficient inventory for product \${item.productId}\`);
+      }
+    }
+
+    await client.query('COMMIT');
+    return { orderId };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+`;
+
 export const PHASE_1_CONSTRAINTS: string[] = [];
 
 export const PHASE_2_CONSTRAINTS = [
