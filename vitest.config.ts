@@ -4,5 +4,7 @@ export default defineConfig({
   test: {
     globals: false,
     environment: "node",
+    pool: "forks",
+    singleFork: true,
   },
 })
