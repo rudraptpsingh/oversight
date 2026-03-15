@@ -1,6 +1,6 @@
 {
   "name": "oversight",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Oversight for AI agents — capture architectural constraints so agents never repeat past mistakes",
   "type": "module",
   "license": "MIT",
