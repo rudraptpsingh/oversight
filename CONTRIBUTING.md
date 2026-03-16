@@ -10,16 +10,20 @@ npm run build
 npm test
 ```
 
-## Running the Dashboard in Dev Mode
+## Running the Dashboard
 
+**Production** (opens http://localhost:7654):
+```bash
+npx oversight dashboard
+```
+
+**Dev mode** (hot-reload Vite on :5174, proxies /api to :7654):
 ```bash
 npm run build          # compile TypeScript CLI first
-npm run dev:dashboard  # hot-reload Vite dev server on :5174
-                       # (proxies /api to CLI server on :7654)
+npm run dev:dashboard  # Vite dev server
 ```
 
 In a separate terminal, start the API server in a test repo:
-
 ```bash
 npx oversight init       # in a test directory
 npx tsx src/cli/index.ts dashboard --port 7654

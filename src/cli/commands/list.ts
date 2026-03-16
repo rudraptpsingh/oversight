@@ -57,5 +57,6 @@ export function registerList(program: Command): void {
       logger.table(rows, ["ID", "TITLE", "TYPE", "CONFIDENCE", "ANCHORS", "AGE"])
       console.log("")
       logger.info(`${records.length} decision(s) found`)
+      logger.info("Dashboard: http://localhost:7654 — run `oversight dashboard` to start")
     })
 }

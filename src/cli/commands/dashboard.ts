@@ -4,7 +4,7 @@ import { createDashboardServer } from "../../dashboard/server.js"
 export function registerDashboard(program: Command): void {
   program
     .command("dashboard")
-    .description("Open the visual decision dashboard in your browser")
+    .description("Open the visual decision dashboard at http://localhost:7654")
     .option("-p, --port <number>", "Port to run the dashboard on", "7654")
     .option("-d, --dir <path>", "Directory containing the .oversight folder")
     .option("--no-open", "Do not automatically open the browser")

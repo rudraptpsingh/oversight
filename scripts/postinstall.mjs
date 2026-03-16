@@ -132,6 +132,7 @@ async function run() {
 
   if (didInit || wroteCursor) {
     console.log("Oversight: initialized .oversight/ and Cursor integration.")
+    console.log("Dashboard: http://localhost:7654 — run `oversight dashboard` to start.")
   }
 }
 

@@ -21,6 +21,7 @@ export function registerCheck(program: Command): void {
 
       if (records.length === 0) {
         logger.info(`No Oversight decisions for this path: ${filepath}`)
+        logger.info("Dashboard: http://localhost:7654 — run `oversight dashboard` to browse all decisions")
         return
       }
 
@@ -28,5 +29,5 @@ export function registerCheck(program: Command): void {
       for (const record of records) {
         logger.decision(record)
       }
-    })
+      logger.info("Dashboard: http://localhost:7654 — run `oversight dashboard` to start")
 }

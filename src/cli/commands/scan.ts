@@ -119,6 +119,8 @@ function writeReport(
   const lines: string[] = [
     "# Oversight Code Scan Report",
     "",
+    "**Dashboard:** [http://localhost:7654](http://localhost:7654) — run `oversight dashboard` to start.",
+    "",
     "## Executive Summary",
     "",
     `| Metric | Value |`,

@@ -172,6 +172,7 @@ export function registerInit(program: Command): void {
       logger.info("Next steps:")
       console.log("  • oversight capture          — record a decision")
       console.log("  • oversight list             — view all decisions")
+      console.log("  • oversight dashboard        — open visual UI at http://localhost:7654")
       console.log("  • oversight check <path>     — check decisions for a file")
       console.log("  • oversight hooks install    — enable git post-commit reminders")
       console.log("")

@@ -72,6 +72,7 @@ async function captureManual(db: Database, author: string): Promise<void> {
   insertDecision(db, record)
   logger.success(`Decision recorded: ${record.id.slice(0, 8)}`)
   logger.decision(record)
+  logger.info("Dashboard: http://localhost:7654 — run `oversight dashboard` to view")
 }
 
 async function captureWithAI(db: Database, author: string): Promise<void> {
@@ -99,6 +100,7 @@ async function captureWithAI(db: Database, author: string): Promise<void> {
   if (action === "save") {
     insertDecision(db, record)
     logger.success(`Decision saved: ${record.id.slice(0, 8)}`)
+    logger.info("Dashboard: http://localhost:7654 — run `oversight dashboard` to view")
   } else {
     logger.info("Cancelled.")
   }

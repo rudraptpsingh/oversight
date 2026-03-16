@@ -64,7 +64,7 @@ npx oversight capture
 # View all decisions
 npx oversight list
 
-# Open the visual dashboard
+# Open the visual dashboard (http://localhost:7654)
 npx oversight dashboard
 
 # Check a file before editing
@@ -116,7 +116,7 @@ Add to your MCP configuration:
 
 ## Visual Dashboard
 
-Run `npx oversight dashboard` to open a local web interface showing:
+Run `npx oversight dashboard` to open a local web interface at **http://localhost:7654** showing:
 
 - All decisions with full context, constraints, and rationale
 - Metrics: coverage heatmap, constraint density, agent check history
@@ -144,7 +144,7 @@ oversight enforce staged    Check staged files (exits 1 if blocked; used by pre-
 oversight enforce staged --dry-run   Preview without blocking (CI)
 oversight export            Export decisions to JSON (stdout or -o file)
 oversight scan              Scan codebase for constraint-like comments (--dry-run, --no-ai)
-oversight dashboard         Open the visual decision dashboard
+oversight dashboard         Open visual dashboard at http://localhost:7654
 ```
 
 ---

@@ -88,7 +88,7 @@ Watch for:
 npx oversight dashboard
 ```
 
-Open the local UI to see:
+Opens **http://localhost:7654**. View:
 - Decision timeline
 - Constraint density
 - Coverage heatmap
