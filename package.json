@@ -61,7 +61,7 @@
   "scripts": {
     "build": "tsc",
     "postbuild": "node --input-type=module -e \"import{chmodSync}from'fs';['dist/cli/index.js','dist/mcp/server.js'].forEach(f=>{try{chmodSync(f,0o755)}catch{}})\"",
-    "build:dashboard": "cd dashboard-ui && npm install && npm run build",
+    "build:dashboard": "vite build",
     "build:all": "npm run build && npm run build:dashboard",
     "build:check": "tsc --noEmit",
     "prepare": "npm run build",

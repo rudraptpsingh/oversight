@@ -1,4 +1,4 @@
-import type { Page } from "../App"
+import type { Page } from "../types"
 import styles from "./Sidebar.module.css"
 
 interface Props {
@@ -31,6 +31,12 @@ export default function Sidebar({ currentPage, onNavigate }: Props) {
           icon={<ListIcon />}
           active={currentPage === "decisions" || currentPage === "decision-detail"}
           onClick={() => onNavigate({ name: "decisions" })}
+        />
+        <NavItem
+          label="Constraints"
+          icon={<ShieldIcon />}
+          active={currentPage === "constraints"}
+          onClick={() => onNavigate({ name: "constraints" })}
         />
       </div>
 
@@ -92,6 +98,14 @@ function ListIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
       <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+    </svg>
+  )
+}
+
+function ShieldIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path fillRule="evenodd" d="M8 1.5a.5.5 0 0 0-.5.5v.518a4.5 4.5 0 0 1-3.26 4.327l-.77.18.77.18a4.5 4.5 0 0 1 3.26 4.327v5.518a.5.5 0 0 0 .5.5c.938 0 2.4-1.1 3.432-2.7.56-.88 1.068-1.9 1.068-2.8V6.845a4.5 4.5 0 0 1 3.26-4.327l.77-.18-.77-.18a4.5 4.5 0 0 1-3.26-4.327V2a.5.5 0 0 0-.5-.5zm0 1.018v4.327a5.5 5.5 0 0 0 3.985 4.982.5.5 0 0 1 .015.036v2.146c0 .56-.392 1.324-1.068 2.4C9.64 14.3 8.438 15 8 15c-.438 0-1.64-.7-2.932-2.1-.676-1.076-1.068-1.84-1.068-2.4V7.168a.5.5 0 0 1 .015-.036A5.5 5.5 0 0 0 8 2.518z"/>
     </svg>
   )
 }

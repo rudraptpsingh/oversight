@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import type { Page } from "../App"
+import type { Page } from "../types"
 import { fetchMetrics, fetchDecisions } from "../api"
 import type { OversightMetrics, OversightRecord, DecisionType } from "../types"
 import StatCard from "../components/StatCard"
@@ -157,24 +157,37 @@ export default function OverviewPage({ onNavigate }: Props) {
           <p className={styles.empty}>No decisions recorded yet. Run <code>oversight capture</code> to add your first.</p>
         ) : (
           <div className={styles.recentList}>
-            {recent.map((d) => (
-              <button
-                key={d.id}
-                className={styles.recentItem}
-                onClick={() => onNavigate({ name: "decision-detail", id: d.id })}
-              >
-                <div className={styles.recentLeft}>
-                  <div className={styles.recentTitle}>{d.title}</div>
-                  <div className={styles.recentMeta}>
-                    {d.author} &middot; {formatDate(d.timestamp)}
+            {recent.map((d) => {
+              const mustCount = d.constraints.filter((c) => c.severity === "must").length
+              const shouldCount = d.constraints.filter((c) => c.severity === "should").length
+              return (
+                <button
+                  key={d.id}
+                  className={styles.recentItem}
+                  onClick={() => onNavigate({ name: "decision-detail", id: d.id })}
+                >
+                  <div className={styles.recentLeft}>
+                    <div className={styles.recentTitle}>{d.title}</div>
+                    <div className={styles.recentMeta}>
+                      {d.author}
+                      <span className={styles.dot}>&middot;</span>
+                      {formatDate(d.timestamp)}
+                      {(mustCount > 0 || shouldCount > 0) && (
+                        <>
+                          <span className={styles.dot}>&middot;</span>
+                          {mustCount > 0 && <span className={styles.mustChip}>{mustCount} MUST</span>}
+                          {shouldCount > 0 && <span className={styles.shouldChip}>{shouldCount} SHOULD</span>}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className={styles.recentBadges}>
-                  {decisionTypeBadge(d.decisionType)}
-                  {statusBadge(d.status)}
-                </div>
-              </button>
-            ))}
+                  <div className={styles.recentBadges}>
+                    {decisionTypeBadge(d.decisionType)}
+                    {statusBadge(d.status)}
+                  </div>
+                </button>
+              )
+            })}
           </div>
         )}
       </div>

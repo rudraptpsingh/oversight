@@ -1,5 +1,71 @@
 import type { Database } from "./adapter.js"
-import type { OversightRecord, DecisionStatus, SimilarDecision, DuplicateCheckResult } from "../types/index.js"
+import type {
+  OversightRecord,
+  DecisionStatus,
+  SimilarDecision,
+  DuplicateCheckResult,
+  Constraint,
+} from "../types/index.js"
+
+/** Normalize text for comparison: lowercase, collapse whitespace. */
+function normalizeDesc(s: string): string {
+  return s.toLowerCase().replace(/\s+/g, " ").trim()
+}
+
+/**
+ * Deduplicate constraints: merge or remove when one subsumes another.
+ * - Exact duplicate (same severity + normalized description): keep one.
+ * - One description contains the other: keep the more comprehensive, merge rationales.
+ */
+export function deduplicateConstraints(constraints: Constraint[]): Constraint[] {
+  if (constraints.length <= 1) return [...constraints]
+
+  const bySeverity = new Map<string, Constraint[]>()
+  for (const c of constraints) {
+    const list = bySeverity.get(c.severity) ?? []
+    list.push({ ...c })
+    bySeverity.set(c.severity, list)
+  }
+
+  const result: Constraint[] = []
+  for (const list of bySeverity.values()) {
+    const sorted = [...list].sort((a, b) => b.description.length - a.description.length)
+    const kept: Constraint[] = []
+    for (const c of sorted) {
+      const normC = normalizeDesc(c.description)
+      const subsumedBy = kept.find((k) => {
+        const normK = normalizeDesc(k.description)
+        if (normK === normC) {
+          k.rationale = [k.rationale, c.rationale].filter(Boolean).join(". ")
+          return true
+        }
+        if (normC.length <= normK.length && normK.includes(normC)) {
+          const merged = [k.rationale, c.rationale].filter(Boolean)
+          k.rationale = merged.length > 0 ? merged.join(". ") : k.rationale
+          return true
+        }
+        return false
+      })
+      if (subsumedBy) continue
+
+      const toReplace = kept.find((k) => {
+        const normK = normalizeDesc(k.description)
+        return normK.length < normC.length && normC.includes(normK)
+      })
+      if (toReplace) {
+        const idx = kept.indexOf(toReplace)
+        kept[idx] = {
+          ...c,
+          rationale: [toReplace.rationale, c.rationale].filter(Boolean).join(". ") || c.rationale,
+        }
+      } else {
+        kept.push(c)
+      }
+    }
+    result.push(...kept)
+  }
+  return result
+}
 
 function matchesGlob(pattern: string, filePath: string): boolean {
   const escaped = pattern
@@ -71,6 +137,7 @@ function rowToRecord(row: RawRow): OversightRecord {
 
 
 export function insertDecision(db: Database, record: OversightRecord): void {
+  const constraints = deduplicateConstraints(record.constraints ?? [])
   db.prepare(`
     INSERT INTO decisions (
       id, version, status, anchors_json, title, summary, context, decision, rationale,
@@ -93,7 +160,7 @@ export function insertDecision(db: Database, record: OversightRecord): void {
     context: record.context,
     decision: record.decision,
     rationale: record.rationale,
-    constraints_json: JSON.stringify(record.constraints),
+    constraints_json: JSON.stringify(constraints),
     alternatives_json: JSON.stringify(record.alternatives),
     consequences: record.consequences,
     tags_json: JSON.stringify(record.tags),
@@ -165,6 +232,7 @@ export function updateDecision(
   const merged = { ...existing, ...updates }
   merged.version = existing.version + 1
   merged.timestamp = new Date().toISOString()
+  merged.constraints = deduplicateConstraints(merged.constraints ?? [])
 
   db.prepare(`
     UPDATE decisions SET
@@ -324,10 +392,12 @@ export function mergeDecisions(
   const mergedFromId = incomingData.mergedFromId
 
   const merged: Partial<OversightRecord> = {
-    constraints: mergeUnique(
-      target.constraints,
-      incomingData.constraints ?? [],
-      (a, b) => a.description.toLowerCase() === b.description.toLowerCase()
+    constraints: deduplicateConstraints(
+      mergeUnique(
+        target.constraints,
+        incomingData.constraints ?? [],
+        (a, b) => a.description.toLowerCase() === b.description.toLowerCase()
+      )
     ),
     agentHints: mergeUnique(
       target.agentHints,

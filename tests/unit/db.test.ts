@@ -7,6 +7,7 @@ import { initDb } from "../../src/db/schema.js"
 import {
   insertDecision, getDecisionById, getDecisionsByPath,
   getAllDecisions, updateDecision, deleteDecision,
+  deduplicateConstraints,
 } from "../../src/db/decisions.js"
 import { searchDecisions } from "../../src/db/search.js"
 import type { OversightRecord } from "../../src/types/index.js"
@@ -115,5 +116,98 @@ describe("DB operations", () => {
     insertDecision(db, makeRecord({ tags: ["database"] }))
     const results = searchDecisions(db, { tags: ["auth"] })
     expect(results).toHaveLength(1)
+  })
+
+  it("deduplicates constraints on insert (subsumed)", () => {
+    const db = initDb(tmpdir)
+    const record = makeRecord({
+      constraints: [
+        {
+          severity: "must",
+          description: "Never replace token-bucket with a simple counter or fixed-window limiter",
+          rationale: "Fixed windows allow burst abuse",
+        },
+        {
+          severity: "must",
+          description: "Never replace token-bucket with a simple counter",
+          rationale: "Burst abuse",
+        },
+      ],
+    })
+    insertDecision(db, record)
+    const fetched = getDecisionById(db, record.id)
+    expect(fetched!.constraints).toHaveLength(1)
+    expect(fetched!.constraints[0].description).toContain("fixed-window")
+    expect(fetched!.constraints[0].rationale).toContain("Fixed windows")
+    expect(fetched!.constraints[0].rationale).toContain("Burst abuse")
+  })
+
+  it("deduplicates constraints on update", () => {
+    const db = initDb(tmpdir)
+    const record = makeRecord({
+      constraints: [
+        { severity: "must", description: "Use Redis", rationale: "Distributed" },
+      ],
+    })
+    insertDecision(db, record)
+    updateDecision(db, record.id, {
+      constraints: [
+        { severity: "must", description: "Use Redis", rationale: "Distributed" },
+        { severity: "must", description: "Use Redis for counters", rationale: "Sync across instances" },
+      ],
+    })
+    const fetched = getDecisionById(db, record.id)
+    expect(fetched!.constraints).toHaveLength(1)
+    expect(fetched!.constraints[0].description).toContain("Redis for counters")
+    expect(fetched!.constraints[0].rationale).toMatch(/Distributed|Sync/)
+  })
+})
+
+describe("deduplicateConstraints", () => {
+  it("removes exact duplicates", () => {
+    const constraints = [
+      { severity: "must" as const, description: "Same rule", rationale: "Reason" },
+      { severity: "must" as const, description: "Same rule", rationale: "Reason" },
+    ]
+    const out = deduplicateConstraints(constraints)
+    expect(out).toHaveLength(1)
+  })
+
+  it("keeps longer when one subsumes the other", () => {
+    const constraints = [
+      {
+        severity: "must" as const,
+        description: "Never replace token-bucket with a simple counter or fixed-window limiter",
+        rationale: "Fixed windows allow burst abuse",
+      },
+      {
+        severity: "must" as const,
+        description: "Never replace token-bucket with a simple counter",
+        rationale: "Burst abuse",
+      },
+    ]
+    const out = deduplicateConstraints(constraints)
+    expect(out).toHaveLength(1)
+    expect(out[0].description).toContain("fixed-window")
+    expect(out[0].rationale).toContain("Fixed windows")
+    expect(out[0].rationale).toContain("Burst abuse")
+  })
+
+  it("preserves different severities", () => {
+    const constraints = [
+      { severity: "must" as const, description: "Rule A", rationale: "A" },
+      { severity: "should" as const, description: "Rule B", rationale: "B" },
+    ]
+    const out = deduplicateConstraints(constraints)
+    expect(out).toHaveLength(2)
+  })
+
+  it("leaves unrelated constraints unchanged", () => {
+    const constraints = [
+      { severity: "must" as const, description: "Never use SQL string interpolation", rationale: "SQLi" },
+      { severity: "must" as const, description: "Never replace SQLite with cloud DB", rationale: "Offline" },
+    ]
+    const out = deduplicateConstraints(constraints)
+    expect(out).toHaveLength(2)
   })
 })

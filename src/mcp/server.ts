@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import fs from "node:fs"
+import path from "node:path"
 import { Server } from "@modelcontextprotocol/sdk/server/index.js"
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
@@ -34,6 +36,9 @@ async function main(): Promise<void> {
   const oversightDir = getOversightDir()
   const db: Database = await getDb(oversightDir)
 
+  const logPath = path.join(oversightDir, "mcp-invocations.log")
+  fs.appendFileSync(logPath, `[${new Date().toISOString()}] Oversight MCP server started (local build)\n`, "utf-8")
+
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: [
       sessionStartTool,
@@ -55,6 +60,12 @@ async function main(): Promise<void> {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params
     const input = (args ?? {}) as Record<string, unknown>
+
+    try {
+      fs.appendFileSync(logPath, `${new Date().toISOString()} ${name}\n`, "utf-8")
+    } catch {
+      // best-effort logging
+    }
 
     try {
       let result: unknown

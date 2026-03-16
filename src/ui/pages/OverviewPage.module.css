@@ -209,6 +209,32 @@
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-top: 2px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.dot {
+  opacity: 0.5;
+}
+
+.mustChip {
+  background: var(--red-muted);
+  color: var(--red);
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.shouldChip {
+  background: var(--yellow-muted);
+  color: var(--yellow);
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
 }
 
 .recentBadges {

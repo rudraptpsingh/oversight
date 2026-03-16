@@ -1,10 +1,4 @@
 import { useState, useCallback } from "react"
-
-export type Page =
-  | { name: "overview" }
-  | { name: "decisions" }
-  | { name: "decision-detail"; id: string }
-
 import type { CaseStates, CaseResult } from "./types/benchmark"
 import { BENCHMARK_CASES } from "./data/benchmarkCases"
 import { runAgent } from "./utils/anthropic"

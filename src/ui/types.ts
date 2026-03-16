@@ -1,3 +1,9 @@
+export type Page =
+  | { name: "overview" }
+  | { name: "decisions" }
+  | { name: "decision-detail"; id: string }
+  | { name: "constraints" }
+
 export type DecisionStatus = "active" | "superseded" | "deprecated" | "proposed" | "needs-review"
 
 export type DecisionType =

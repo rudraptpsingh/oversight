@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import type { Page } from "../App"
+import type { Page } from "../types"
 import { fetchDecision, updateDecisionStatus, deleteDecision } from "../api"
 import type { OversightRecord, DecisionStatus, Constraint } from "../types"
 import { decisionTypeBadge, statusBadge, confidenceBadge, constraintBadge } from "../components/Badge"

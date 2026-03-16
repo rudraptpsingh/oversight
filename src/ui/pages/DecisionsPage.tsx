@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react"
-import type { Page } from "../App"
+import type { Page } from "../types"
 import { fetchDecisions, searchDecisions } from "../api"
 import type { OversightRecord, DecisionStatus, DecisionType } from "../types"
 import { decisionTypeBadge, statusBadge, Badge } from "../components/Badge"

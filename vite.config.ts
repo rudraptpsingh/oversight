@@ -7,7 +7,7 @@ export default defineConfig({
     port: 5173,
   },
   build: {
-    outDir: "dist-preview",
+    outDir: "dashboard-ui/dist",
     emptyOutDir: true,
   },
 })
