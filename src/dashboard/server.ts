@@ -4,6 +4,7 @@ import { join, extname } from "node:path"
 import { createRequire } from "node:module"
 import { fileURLToPath } from "node:url"
 import { getDb } from "../db/schema.js"
+import type { Database } from "../db/schema.js"
 import { getAllDecisions, getDecisionById, updateDecision, deleteDecision } from "../db/decisions.js"
 import { searchDecisions } from "../db/search.js"
 import { computeMetrics } from "../db/metrics.js"
@@ -69,13 +70,13 @@ function serveStatic(res: ServerResponse, filePath: string): boolean {
   }
 }
 
-export function createDashboardServer(port = 7654, startDir?: string): { start: () => Promise<void>; stop: () => void } {
+export async function createDashboardServer(port = 7654, startDir?: string): Promise<{ start: () => Promise<void>; stop: () => void }> {
   const distDir = join(__dirname, "../../dashboard-ui/dist")
-  let db: ReturnType<typeof getDb>
+  let db: Database
 
   try {
     const oversightDir = getOversightDir(startDir ?? process.cwd())
-    db = getDb(oversightDir)
+    db = await getDb(oversightDir)
   } catch {
     throw new Error("Oversight is not initialized in this directory. Run `oversight init` first.")
   }
@@ -115,7 +116,7 @@ export function createDashboardServer(port = 7654, startDir?: string): { start: 
     req: IncomingMessage,
     res: ServerResponse,
     url: URL,
-    db: ReturnType<typeof getDb>
+    db: Database
   ): Promise<void> {
     const pathname = url.pathname
     const method = req.method ?? "GET"

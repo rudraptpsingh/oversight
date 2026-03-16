@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "./adapter.js"
 import type { OversightRecord, CheckChangeResult, DecisionType, Confidence } from "../types/index.js"
 
 export interface CheckChangeLogEntry {
@@ -46,7 +46,7 @@ export interface OversightMetrics {
   }
 }
 
-export function logCheckChange(db: Database.Database, entry: CheckChangeLogEntry): void {
+export function logCheckChange(db: Database, entry: CheckChangeLogEntry): void {
   db.prepare(`
     INSERT INTO check_change_log
       (change_description, affected_paths_json, relevant_decision_ids_json,
@@ -64,7 +64,7 @@ export function logCheckChange(db: Database.Database, entry: CheckChangeLogEntry
   )
 }
 
-export function computeMetrics(db: Database.Database): OversightMetrics {
+export function computeMetrics(db: Database): OversightMetrics {
   const rows = db.prepare("SELECT * FROM decisions").all() as Array<Record<string, unknown>>
 
   const typeMap = {} as Record<DecisionType, number>

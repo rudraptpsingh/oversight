@@ -1,11 +1,6 @@
-import Database from "better-sqlite3"
+import type { Database } from "./adapter.js"
 import type { OversightRecord, SearchOptions } from "../types/index.js"
 import { getAllDecisions } from "./decisions.js"
-
-interface FtsRow {
-  decision_id: string
-  rank: number
-}
 
 interface RawRow {
   id: string
@@ -63,33 +58,20 @@ function rowToRecord(row: RawRow): OversightRecord {
   }
 }
 
-export function searchDecisions(db: Database.Database, options: SearchOptions): OversightRecord[] {
+export function searchDecisions(db: Database, options: SearchOptions): OversightRecord[] {
   const limit = options.limit ?? 10
-  let candidates: OversightRecord[]
+  let candidates = getAllDecisions(db)
 
   if (options.query) {
-    const ftsRows = db
-      .prepare(
-        `SELECT decision_id, rank FROM decisions_fts WHERE decisions_fts MATCH ? ORDER BY rank LIMIT ?`
-      )
-      .all(options.query, limit * 3) as FtsRow[]
-
-    const ids = ftsRows.map((r) => r.decision_id)
-    if (ids.length === 0) {
-      candidates = []
-    } else {
-      const placeholders = ids.map(() => "?").join(",")
-      const rows = db
-        .prepare(`SELECT * FROM decisions WHERE id IN (${placeholders})`)
-        .all(...ids) as RawRow[]
-
-      const idOrder = new Map(ids.map((id, i) => [id, i]))
-      candidates = rows
-        .map(rowToRecord)
-        .sort((a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0))
-    }
-  } else {
-    candidates = getAllDecisions(db)
+    const q = options.query.toLowerCase()
+    candidates = candidates.filter((r) =>
+      r.title.toLowerCase().includes(q) ||
+      r.summary.toLowerCase().includes(q) ||
+      r.decision.toLowerCase().includes(q) ||
+      r.context.toLowerCase().includes(q) ||
+      r.rationale.toLowerCase().includes(q) ||
+      r.tags.some((t) => t.toLowerCase().includes(q))
+    )
   }
 
   if (options.status) {

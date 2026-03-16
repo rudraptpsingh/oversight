@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "../../db/adapter.js"
 import { searchDecisions } from "../../db/search.js"
 import type { OversightRecord, DecisionType } from "../../types/index.js"
 
@@ -19,7 +19,7 @@ export const searchTool = {
 }
 
 export function handleSearch(
-  db: Database.Database,
+  db: Database,
   input: { query: string; tags?: string[]; decisionTypes?: string[]; limit?: number }
 ): OversightRecord[] {
   return searchDecisions(db, {

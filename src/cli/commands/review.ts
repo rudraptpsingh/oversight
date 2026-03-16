@@ -13,7 +13,7 @@ export function registerReview(program: Command): void {
     .description("Review decisions that need attention")
     .action(async () => {
       const oversightDir = getOversightDir()
-      const db = getDb(oversightDir)
+      const db = await getDb(oversightDir)
       const all = getAllDecisions(db)
       const staleThreshold = Date.now() - STALE_DAYS * 24 * 60 * 60 * 1000
 

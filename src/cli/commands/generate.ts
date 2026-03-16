@@ -13,9 +13,9 @@ export function registerGenerate(program: Command): void {
     .description("Generate OVERSIGHT.md — a human and agent-readable summary of all active constraints")
     .option("-o, --output <path>", "Output file path (default: OVERSIGHT.md in repo root)")
     .option("--stdout", "Print to stdout instead of writing a file")
-    .action((opts: { output?: string; stdout?: boolean }) => {
+    .action(async (opts: { output?: string; stdout?: boolean }) => {
       const oversightDir = getOversightDir()
-      const db = getDb(oversightDir)
+      const db = await getDb(oversightDir)
       const decisions = getAllDecisions(db, "active")
       const markdown = generateOversightMd(decisions)
 

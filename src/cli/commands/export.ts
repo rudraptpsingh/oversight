@@ -12,9 +12,9 @@ export function registerExport(program: Command): void {
     .description("Export decisions to JSON (canonical format for programmatic use)")
     .option("-o, --output <path>", "Output file (default: stdout)")
     .option("--status <status>", "Filter by status (default: active)", "active")
-    .action((opts: { output?: string; status?: string }) => {
+    .action(async (opts: { output?: string; status?: string }) => {
       const oversightDir = getOversightDir()
-      const db = getDb(oversightDir)
+      const db = await getDb(oversightDir)
       const decisions =
       opts.status === "all" ? getAllDecisions(db) : getAllDecisions(db, opts.status as "active" | "superseded" | "deprecated")
 

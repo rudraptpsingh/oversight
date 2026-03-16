@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "../../db/adapter.js"
 import { mergeDecisions, getDecisionById } from "../../db/decisions.js"
 import type { OversightRecord } from "../../types/index.js"
 
@@ -23,7 +23,7 @@ export const mergeTool = {
 }
 
 export function handleMerge(
-  db: Database.Database,
+  db: Database,
   input: { targetId: string; sourceId: string }
 ): { merged: OversightRecord; superseded: OversightRecord } | { error: string } {
   const target = getDecisionById(db, input.targetId)

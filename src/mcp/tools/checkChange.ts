@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "../../db/adapter.js"
 import { getDecisionsByPath } from "../../db/decisions.js"
 import { logCheckChange } from "../../db/metrics.js"
 import { readEnforcement } from "../../utils/config.js"
@@ -21,7 +21,7 @@ export const checkChangeTool = {
 }
 
 export function handleCheckChange(
-  db: Database.Database,
+  db: Database,
   input: { changeDescription: string; affectedPaths: string[]; sessionId?: string }
 ): CheckChangeResult {
   const allDecisions: OversightRecord[] = []

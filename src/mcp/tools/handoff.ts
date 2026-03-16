@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "../../db/adapter.js"
 import { getSessionById, getAllSessions } from "../../db/sessions.js"
 import { getAllDecisions } from "../../db/decisions.js"
 import type { OversightSession } from "../../types/index.js"
@@ -18,7 +18,7 @@ export const generateHandoffTool = {
 }
 
 export function handleGenerateHandoff(
-  db: Database.Database,
+  db: Database,
   input: { sessionId?: string; nextTaskHint?: string }
 ): {
   manifest: {
@@ -96,7 +96,7 @@ export const receiveHandoffTool = {
 }
 
 export function handleReceiveHandoff(
-  db: Database.Database,
+  db: Database,
   input: { agentId?: string; taskDescription: string }
 ): {
   newSessionId?: string

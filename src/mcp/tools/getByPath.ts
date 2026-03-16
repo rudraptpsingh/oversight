@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "../../db/adapter.js"
 import { getDecisionsByPath } from "../../db/decisions.js"
 import type { OversightRecord } from "../../types/index.js"
 
@@ -17,7 +17,7 @@ export const getByPathTool = {
 }
 
 export function handleGetByPath(
-  db: Database.Database,
+  db: Database,
   input: { path: string; includeSuperseded?: boolean }
 ): OversightRecord[] {
   const records = getDecisionsByPath(db, input.path)

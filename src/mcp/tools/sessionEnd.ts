@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "../../db/adapter.js"
 import { getSessionById, updateSession } from "../../db/sessions.js"
 import type { OversightSession } from "../../types/index.js"
 
@@ -26,7 +26,7 @@ export const sessionEndTool = {
 }
 
 export function handleSessionEnd(
-  db: Database.Database,
+  db: Database,
   input: { sessionId: string; summary: string; handoffNotes?: string; status?: string }
 ): { success: boolean; session: OversightSession | null; message: string } {
   const session = getSessionById(db, input.sessionId)

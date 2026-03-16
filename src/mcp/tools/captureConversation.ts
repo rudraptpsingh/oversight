@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "../../db/adapter.js"
 import { extractDecisionsFromConversation, type ConversationMessage } from "../../ai/capture.js"
 import { checkForDuplicates, insertDecision, mergeDecisions } from "../../db/decisions.js"
 import { readConfig } from "../../utils/config.js"
@@ -56,7 +56,7 @@ interface CaptureResult {
 }
 
 export async function handleCaptureConversation(
-  db: Database.Database,
+  db: Database,
   input: {
     messages: Array<{ role: string; content: string }>
     source: { origin: string; conversationId?: string; participants?: string[] }

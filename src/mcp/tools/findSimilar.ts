@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "../../db/adapter.js"
 import { checkForDuplicates, findSimilarDecisions } from "../../db/decisions.js"
 import type { DuplicateCheckResult, SimilarDecision } from "../../types/index.js"
 
@@ -23,7 +23,7 @@ export const findSimilarTool = {
 }
 
 export function handleFindSimilar(
-  db: Database.Database,
+  db: Database,
   input: {
     title: string
     summary: string

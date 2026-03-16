@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "../../db/adapter.js"
 import { getAllDecisions } from "../../db/decisions.js"
 import type { OversightRecord } from "../../types/index.js"
 
@@ -17,7 +17,7 @@ export const getBySymbolTool = {
 }
 
 export function handleGetBySymbol(
-  db: Database.Database,
+  db: Database,
   input: { symbol: string; path?: string }
 ): OversightRecord[] {
   const all = getAllDecisions(db)

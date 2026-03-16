@@ -26,7 +26,7 @@ export function registerList(program: Command): void {
     .option("--json", "Output raw JSON")
     .action(async (opts: { status?: string; tag?: string; type?: string; json?: boolean }) => {
       const oversightDir = getOversightDir()
-      const db = getDb(oversightDir)
+      const db = await getDb(oversightDir)
 
       let records = opts.status
         ? getAllDecisions(db, opts.status as DecisionStatus)

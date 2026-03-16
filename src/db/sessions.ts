@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "./adapter.js"
 import type { OversightSession } from "../types/index.js"
 
 interface RawSessionRow {
@@ -29,7 +29,7 @@ function rowToSession(row: RawSessionRow): OversightSession {
   }
 }
 
-export function insertSession(db: Database.Database, session: OversightSession): void {
+export function insertSession(db: Database, session: OversightSession): void {
   db.prepare(`
     INSERT INTO sessions (id, agent_id, task_description, started_at, ended_at, status,
       decisions_recorded_json, checks_performed, summary, handoff_notes)
@@ -49,14 +49,14 @@ export function insertSession(db: Database.Database, session: OversightSession):
   })
 }
 
-export function getSessionById(db: Database.Database, id: string): OversightSession | null {
+export function getSessionById(db: Database, id: string): OversightSession | null {
   const row = db.prepare("SELECT * FROM sessions WHERE id = ?").get(id) as RawSessionRow | undefined
   if (!row) return null
   return rowToSession(row)
 }
 
 export function updateSession(
-  db: Database.Database,
+  db: Database,
   id: string,
   updates: Partial<OversightSession>
 ): OversightSession | null {
@@ -84,13 +84,13 @@ export function updateSession(
   return merged
 }
 
-export function getActiveSession(db: Database.Database): OversightSession | null {
+export function getActiveSession(db: Database): OversightSession | null {
   const row = db.prepare("SELECT * FROM sessions WHERE status = 'active' ORDER BY started_at DESC LIMIT 1").get() as RawSessionRow | undefined
   if (!row) return null
   return rowToSession(row)
 }
 
-export function getAllSessions(db: Database.Database): OversightSession[] {
+export function getAllSessions(db: Database): OversightSession[] {
   const rows = db.prepare("SELECT * FROM sessions ORDER BY started_at DESC").all() as RawSessionRow[]
   return rows.map(rowToSession)
 }

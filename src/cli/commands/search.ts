@@ -26,7 +26,7 @@ export function registerSearch(program: Command): void {
     .option("--json", "Output raw JSON")
     .action(async (query: string, opts: { tag?: string; type?: string; limit?: string; json?: boolean }) => {
       const oversightDir = getOversightDir()
-      const db = getDb(oversightDir)
+      const db = await getDb(oversightDir)
 
       const tags = opts.tag ? opts.tag.split(",").map((t) => t.trim()) : undefined
       const decisionTypes = opts.type ? [opts.type as DecisionType] : undefined

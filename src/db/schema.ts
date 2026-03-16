@@ -1,14 +1,13 @@
-import Database from "better-sqlite3"
-import path from "path"
 import fs from "fs"
+import path from "path"
+import { openDatabase, type Database } from "./adapter.js"
 
-export function initDb(oversightDir: string): Database.Database {
+export type { Database }
+
+export async function initDb(oversightDir: string): Promise<Database> {
   fs.mkdirSync(oversightDir, { recursive: true })
   const dbPath = path.join(oversightDir, "decisions.db")
-  const db = new Database(dbPath)
-
-  db.pragma("journal_mode = WAL")
-  db.pragma("foreign_keys = ON")
+  const db = await openDatabase(dbPath)
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS check_change_log (
@@ -51,17 +50,6 @@ export function initDb(oversightDir: string): Database.Database {
       source_json TEXT
     );
 
-    CREATE VIRTUAL TABLE IF NOT EXISTS decisions_fts USING fts5(
-      decision_id,
-      title,
-      summary,
-      context,
-      decision_text,
-      rationale,
-      tags_text,
-      tokenize='porter ascii'
-    );
-
     CREATE TABLE IF NOT EXISTS sessions (
       id TEXT PRIMARY KEY,
       agent_id TEXT NOT NULL DEFAULT '',
@@ -79,10 +67,7 @@ export function initDb(oversightDir: string): Database.Database {
   return db
 }
 
-export function getDb(oversightDir: string): Database.Database {
+export async function getDb(oversightDir: string): Promise<Database> {
   const dbPath = path.join(oversightDir, "decisions.db")
-  const db = new Database(dbPath)
-  db.pragma("journal_mode = WAL")
-  db.pragma("foreign_keys = ON")
-  return db
+  return openDatabase(dbPath)
 }

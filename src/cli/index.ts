@@ -30,9 +30,9 @@ program
 // Auto-init on first use (when running any command except init)
 const cmd = process.argv[2]
 if (cmd && cmd !== "init" && !findOversightDir(process.cwd())) {
-  if (ensureInitNonInteractive()) {
-    console.log("Oversight: initialized .oversight/ (first run)")
-  }
+  ensureInitNonInteractive().then((didInit) => {
+    if (didInit) console.log("Oversight: initialized .oversight/ (first run)")
+  }).catch(() => {})
 }
 
 registerInit(program)

@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "./adapter.js"
 import type { OversightRecord, DecisionStatus, SimilarDecision, DuplicateCheckResult } from "../types/index.js"
 
 function matchesGlob(pattern: string, filePath: string): boolean {
@@ -69,26 +69,8 @@ function rowToRecord(row: RawRow): OversightRecord {
   }
 }
 
-function insertFts(db: Database.Database, record: OversightRecord): void {
-  db.prepare(`
-    INSERT INTO decisions_fts(decision_id, title, summary, context, decision_text, rationale, tags_text)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    record.id,
-    record.title,
-    record.summary,
-    record.context,
-    record.decision,
-    record.rationale,
-    record.tags.join(" ")
-  )
-}
 
-function deleteFts(db: Database.Database, id: string): void {
-  db.prepare("DELETE FROM decisions_fts WHERE decision_id = ?").run(id)
-}
-
-export function insertDecision(db: Database.Database, record: OversightRecord): void {
+export function insertDecision(db: Database, record: OversightRecord): void {
   db.prepare(`
     INSERT INTO decisions (
       id, version, status, anchors_json, title, summary, context, decision, rationale,
@@ -128,17 +110,15 @@ export function insertDecision(db: Database.Database, record: OversightRecord): 
     review_triggers_json: JSON.stringify(record.reviewTriggers),
     source_json: record.source ? JSON.stringify(record.source) : null,
   })
-
-  insertFts(db, record)
 }
 
-export function getDecisionById(db: Database.Database, id: string): OversightRecord | null {
+export function getDecisionById(db: Database, id: string): OversightRecord | null {
   const row = db.prepare("SELECT * FROM decisions WHERE id = ?").get(id) as RawRow | undefined
   if (!row) return null
   return rowToRecord(row)
 }
 
-export function getDecisionsByPath(db: Database.Database, filePath: string): OversightRecord[] {
+export function getDecisionsByPath(db: Database, filePath: string): OversightRecord[] {
   const normalizedPath = filePath.replace(/^\.\//, "").replace(/\\/g, "/")
   const rows = db.prepare("SELECT * FROM decisions").all() as RawRow[]
   return rows
@@ -159,13 +139,13 @@ export function getDecisionsByPath(db: Database.Database, filePath: string): Ove
     )
 }
 
-export function getDecisionsByTag(db: Database.Database, tag: string): OversightRecord[] {
+export function getDecisionsByTag(db: Database, tag: string): OversightRecord[] {
   const rows = db.prepare("SELECT * FROM decisions").all() as RawRow[]
   return rows.map(rowToRecord).filter((record) => record.tags.includes(tag))
 }
 
 export function getAllDecisions(
-  db: Database.Database,
+  db: Database,
   statusFilter?: DecisionStatus
 ): OversightRecord[] {
   const rows = statusFilter
@@ -175,7 +155,7 @@ export function getAllDecisions(
 }
 
 export function updateDecision(
-  db: Database.Database,
+  db: Database,
   id: string,
   updates: Partial<OversightRecord>
 ): OversightRecord | null {
@@ -216,14 +196,10 @@ export function updateDecision(
     source_json: merged.source ? JSON.stringify(merged.source) : null,
   })
 
-  deleteFts(db, id)
-  insertFts(db, merged)
-
   return merged
 }
 
-export function deleteDecision(db: Database.Database, id: string): boolean {
-  deleteFts(db, id)
+export function deleteDecision(db: Database, id: string): boolean {
   const result = db.prepare("DELETE FROM decisions WHERE id = ?").run(id)
   return result.changes > 0
 }
@@ -282,7 +258,7 @@ export function computeSimilarityScore(
 }
 
 export function findSimilarDecisions(
-  db: Database.Database,
+  db: Database,
   incoming: { title: string; summary: string; decision: string; tags?: string[] },
   threshold = 0.35
 ): SimilarDecision[] {
@@ -300,7 +276,7 @@ export function findSimilarDecisions(
 }
 
 export function checkForDuplicates(
-  db: Database.Database,
+  db: Database,
   incoming: { title: string; summary: string; decision: string; tags?: string[] }
 ): DuplicateCheckResult {
   const similar = findSimilarDecisions(db, incoming, 0.35)
@@ -338,7 +314,7 @@ export function checkForDuplicates(
 }
 
 export function mergeDecisions(
-  db: Database.Database,
+  db: Database,
   targetId: string,
   incomingData: Partial<OversightRecord> & { mergedFromId?: string }
 ): OversightRecord | null {

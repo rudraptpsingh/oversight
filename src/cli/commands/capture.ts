@@ -8,6 +8,7 @@ import { insertDecision } from "../../db/decisions.js"
 import { logger } from "../../utils/logger.js"
 import { expandWithAI } from "../../ai/capture.js"
 import type { OversightRecord, DecisionType, Confidence, CodeAnchor, AgentHint } from "../../types/index.js"
+import type { Database } from "../../db/schema.js"
 
 export function registerCapture(program: Command): void {
   program
@@ -17,7 +18,7 @@ export function registerCapture(program: Command): void {
     .action(async (opts: { ai?: boolean }) => {
       const oversightDir = getOversightDir()
       const config = readConfig()
-      const db = getDb(oversightDir)
+      const db = await getDb(oversightDir)
 
       if (opts.ai) {
         await captureWithAI(db, config.author)
@@ -27,7 +28,7 @@ export function registerCapture(program: Command): void {
     })
 }
 
-async function captureManual(db: ReturnType<typeof getDb>, author: string): Promise<void> {
+async function captureManual(db: Database, author: string): Promise<void> {
   const answers = await inquirer.prompt([
     { type: "input", name: "title", message: "Decision title:", validate: (v: string) => v.trim().length > 0 || "Title is required" },
     { type: "list", name: "decisionType", message: "Decision type:", choices: ["architectural","algorithmic","security","performance","compatibility","compliance","business-logic","workaround","deferred"] },
@@ -73,7 +74,7 @@ async function captureManual(db: ReturnType<typeof getDb>, author: string): Prom
   logger.decision(record)
 }
 
-async function captureWithAI(db: ReturnType<typeof getDb>, author: string): Promise<void> {
+async function captureWithAI(db: Database, author: string): Promise<void> {
   const { roughNote } = await inquirer.prompt([
     { type: "input", name: "roughNote", message: "Describe the decision in a sentence:", validate: (v: string) => v.trim().length > 0 || "Please enter a description" },
   ])

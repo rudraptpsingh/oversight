@@ -11,7 +11,7 @@ export function registerCheck(program: Command): void {
     .option("--json", "Output raw JSON")
     .action(async (filepath: string, opts: { json?: boolean }) => {
       const oversightDir = getOversightDir()
-      const db = getDb(oversightDir)
+      const db = await getDb(oversightDir)
       const records = getDecisionsByPath(db, filepath)
 
       if (opts.json) {

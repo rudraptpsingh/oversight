@@ -8,6 +8,7 @@ import {
 import { createRequire } from "module"
 import { getOversightDir } from "../utils/config.js"
 import { getDb } from "../db/schema.js"
+import type { Database } from "../db/schema.js"
 import { getByPathTool, handleGetByPath } from "./tools/getByPath.js"
 import { getBySymbolTool, handleGetBySymbol } from "./tools/getBySymbol.js"
 import { searchTool, handleSearch } from "./tools/search.js"
@@ -29,93 +30,93 @@ const server = new Server(
   { capabilities: { tools: {} } }
 )
 
-const oversightDir = getOversightDir()
-const db = getDb(oversightDir)
-
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [
-    sessionStartTool,
-    sessionEndTool,
-    getByPathTool,
-    getBySymbolTool,
-    searchTool,
-    recordTool,
-    checkChangeTool,
-    metricsTool,
-    findSimilarTool,
-    captureConversationTool,
-    mergeTool,
-    generateHandoffTool,
-    receiveHandoffTool,
-  ],
-}))
-
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params
-  const input = (args ?? {}) as Record<string, unknown>
-
-  try {
-    let result: unknown
-
-    switch (name) {
-      case "oversight_session_start":
-        result = handleSessionStart(db, input as Parameters<typeof handleSessionStart>[1])
-        break
-      case "oversight_session_end":
-        result = handleSessionEnd(db, input as Parameters<typeof handleSessionEnd>[1])
-        break
-      case "oversight_get_by_path":
-        result = handleGetByPath(db, input as Parameters<typeof handleGetByPath>[1])
-        break
-      case "oversight_get_by_symbol":
-        result = handleGetBySymbol(db, input as Parameters<typeof handleGetBySymbol>[1])
-        break
-      case "oversight_search":
-        result = handleSearch(db, input as Parameters<typeof handleSearch>[1])
-        break
-      case "oversight_record":
-        result = handleRecord(db, input as Parameters<typeof handleRecord>[1])
-        break
-      case "oversight_check_change":
-        result = handleCheckChange(db, input as Parameters<typeof handleCheckChange>[1])
-        break
-      case "oversight_get_metrics":
-        result = handleGetMetrics(db)
-        break
-      case "oversight_find_similar":
-        result = handleFindSimilar(db, input as Parameters<typeof handleFindSimilar>[1])
-        break
-      case "oversight_capture_conversation":
-        result = await handleCaptureConversation(db, input as Parameters<typeof handleCaptureConversation>[1])
-        break
-      case "oversight_merge":
-        result = handleMerge(db, input as Parameters<typeof handleMerge>[1])
-        break
-      case "oversight_generate_handoff":
-        result = handleGenerateHandoff(db, input as Parameters<typeof handleGenerateHandoff>[1])
-        break
-      case "oversight_receive_handoff":
-        result = handleReceiveHandoff(db, input as Parameters<typeof handleReceiveHandoff>[1])
-        break
-      default:
-        return {
-          content: [{ type: "text" as const, text: JSON.stringify({ error: `Unknown tool: ${name}` }) }],
-          isError: true,
-        }
-    }
-
-    return {
-      content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
-    }
-  } catch (err) {
-    return {
-      content: [{ type: "text" as const, text: JSON.stringify({ error: String(err) }) }],
-      isError: true,
-    }
-  }
-})
-
 async function main(): Promise<void> {
+  const oversightDir = getOversightDir()
+  const db: Database = await getDb(oversightDir)
+
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    tools: [
+      sessionStartTool,
+      sessionEndTool,
+      getByPathTool,
+      getBySymbolTool,
+      searchTool,
+      recordTool,
+      checkChangeTool,
+      metricsTool,
+      findSimilarTool,
+      captureConversationTool,
+      mergeTool,
+      generateHandoffTool,
+      receiveHandoffTool,
+    ],
+  }))
+
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    const { name, arguments: args } = request.params
+    const input = (args ?? {}) as Record<string, unknown>
+
+    try {
+      let result: unknown
+
+      switch (name) {
+        case "oversight_session_start":
+          result = handleSessionStart(db, input as Parameters<typeof handleSessionStart>[1])
+          break
+        case "oversight_session_end":
+          result = handleSessionEnd(db, input as Parameters<typeof handleSessionEnd>[1])
+          break
+        case "oversight_get_by_path":
+          result = handleGetByPath(db, input as Parameters<typeof handleGetByPath>[1])
+          break
+        case "oversight_get_by_symbol":
+          result = handleGetBySymbol(db, input as Parameters<typeof handleGetBySymbol>[1])
+          break
+        case "oversight_search":
+          result = handleSearch(db, input as Parameters<typeof handleSearch>[1])
+          break
+        case "oversight_record":
+          result = handleRecord(db, input as Parameters<typeof handleRecord>[1])
+          break
+        case "oversight_check_change":
+          result = handleCheckChange(db, input as Parameters<typeof handleCheckChange>[1])
+          break
+        case "oversight_get_metrics":
+          result = handleGetMetrics(db)
+          break
+        case "oversight_find_similar":
+          result = handleFindSimilar(db, input as Parameters<typeof handleFindSimilar>[1])
+          break
+        case "oversight_capture_conversation":
+          result = await handleCaptureConversation(db, input as Parameters<typeof handleCaptureConversation>[1])
+          break
+        case "oversight_merge":
+          result = handleMerge(db, input as Parameters<typeof handleMerge>[1])
+          break
+        case "oversight_generate_handoff":
+          result = handleGenerateHandoff(db, input as Parameters<typeof handleGenerateHandoff>[1])
+          break
+        case "oversight_receive_handoff":
+          result = handleReceiveHandoff(db, input as Parameters<typeof handleReceiveHandoff>[1])
+          break
+        default:
+          return {
+            content: [{ type: "text" as const, text: JSON.stringify({ error: `Unknown tool: ${name}` }) }],
+            isError: true,
+          }
+      }
+
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+      }
+    } catch (err) {
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({ error: String(err) }) }],
+        isError: true,
+      }
+    }
+  })
+
   const transport = new StdioServerTransport()
   await server.connect(transport)
   process.stderr.write("Oversight MCP server running on stdio\n")

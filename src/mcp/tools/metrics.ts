@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "../../db/adapter.js"
 import { computeMetrics } from "../../db/metrics.js"
 import type { OversightMetrics } from "../../db/metrics.js"
 
@@ -13,6 +13,6 @@ export const metricsTool = {
   },
 }
 
-export function handleGetMetrics(db: Database.Database): OversightMetrics {
+export function handleGetMetrics(db: Database): OversightMetrics {
   return computeMetrics(db)
 }

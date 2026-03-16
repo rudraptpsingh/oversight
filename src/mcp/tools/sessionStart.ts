@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "../../db/adapter.js"
 import { v4 as uuidv4 } from "uuid"
 import { insertSession, getActiveSession } from "../../db/sessions.js"
 import { getAllDecisions } from "../../db/decisions.js"
@@ -19,7 +19,7 @@ export const sessionStartTool = {
 }
 
 export function handleSessionStart(
-  db: Database.Database,
+  db: Database,
   input: { agentId?: string; taskDescription: string }
 ): {
   sessionId: string

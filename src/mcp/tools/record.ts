@@ -1,4 +1,4 @@
-import Database from "better-sqlite3"
+import type { Database } from "../../db/adapter.js"
 import { v4 as uuidv4 } from "uuid"
 import { insertDecision, checkForDuplicates, mergeDecisions } from "../../db/decisions.js"
 import { readConfig } from "../../utils/config.js"
@@ -54,7 +54,7 @@ export const recordTool = {
 }
 
 export function handleRecord(
-  db: Database.Database,
+  db: Database,
   input: {
     title: string
     summary: string

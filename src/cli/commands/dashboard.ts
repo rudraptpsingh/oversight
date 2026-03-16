@@ -13,7 +13,7 @@ export function registerDashboard(program: Command): void {
 
       let server: { start: () => Promise<void>; stop: () => void }
       try {
-        server = createDashboardServer(port, opts.dir)
+        server = await createDashboardServer(port, opts.dir)
       } catch (err: unknown) {
         console.error(String(err))
         process.exit(1)

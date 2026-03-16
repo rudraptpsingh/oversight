@@ -17,7 +17,7 @@ export function registerHeatmap(program: Command): void {
     .option("--json", "Output raw JSON")
     .action(async (opts: { json?: boolean }) => {
       const oversightDir = getOversightDir()
-      const db = getDb(oversightDir)
+      const db = await getDb(oversightDir)
 
       let churnFiles: string[]
       try {

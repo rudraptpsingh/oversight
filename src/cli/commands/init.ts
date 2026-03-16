@@ -33,7 +33,7 @@ Before editing files involved in architecture or security, call Oversight MCP to
 Respect MUST constraints. If \`oversight_check_change\` returns high risk, revise the change or get explicit approval.
 `
 
-export function ensureInitNonInteractive(cwd: string = process.cwd()): boolean {
+export async function ensureInitNonInteractive(cwd: string = process.cwd()): Promise<boolean> {
   const oversightDir = path.join(cwd, ".oversight")
   const configPath = path.join(oversightDir, "config.json")
   if (fs.existsSync(configPath)) return false
@@ -43,7 +43,7 @@ export function ensureInitNonInteractive(cwd: string = process.cwd()): boolean {
     { version: "1.0.0", author, repoRoot: cwd, createdAt: new Date().toISOString() },
     cwd
   )
-  initDb(oversightDir)
+  await initDb(oversightDir)
   fs.writeFileSync(
     path.join(oversightDir, ".gitignore"),
     "decisions.db-journal\ndecisions.db-shm\ndecisions.db-wal\n",
@@ -157,7 +157,7 @@ export function registerInit(program: Command): void {
         cwd
       )
 
-      initDb(oversightDir)
+      await initDb(oversightDir)
 
       fs.writeFileSync(
         path.join(oversightDir, ".gitignore"),

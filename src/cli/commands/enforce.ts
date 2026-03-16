@@ -32,10 +32,10 @@ export function registerEnforce(program: Command): void {
     .command("staged")
     .description("Check staged files against constraints. Exits 1 if blocked (use in pre-commit).")
     .option("--dry-run", "Print warnings but exit 0 even when blocked (for CI preview)")
-    .action((opts: { dryRun?: boolean }) => {
+    .action(async (opts: { dryRun?: boolean }) => {
       const cwd = process.cwd()
       const oversightDir = getOversightDir(cwd)
-      const db = getDb(oversightDir)
+      const db = await getDb(oversightDir)
 
       const staged = getStagedFiles(cwd)
       if (staged.length === 0) {
