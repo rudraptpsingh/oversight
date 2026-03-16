@@ -2,17 +2,21 @@ import type { Database } from "../../db/adapter.js"
 import { v4 as uuidv4 } from "uuid"
 import { insertSession, getActiveSession } from "../../db/sessions.js"
 import { getAllDecisions } from "../../db/decisions.js"
+import { retrieveConstraintsByQuery } from "../../db/retrieval.js"
 import type { OversightSession } from "../../types/index.js"
+
+const SESSION_TOP_K = 20
 
 export const sessionStartTool = {
   name: "oversight_session_start",
   description:
-    "Call at the start of every agent session. Loads all active architectural constraints and returns them so you never repeat past mistakes. Also marks any previous session as abandoned if still open.",
+    "Call at the start of every agent session. Loads constraints ranked by relevance to your task (BM25). Use topK to limit results and reduce tokens.",
   inputSchema: {
     type: "object" as const,
     properties: {
-      agentId: { type: "string", description: "Identifier for this agent instance (e.g. 'claude-session-abc')" },
-      taskDescription: { type: "string", description: "What you are about to work on" },
+      agentId: { type: "string", description: "Identifier for this agent instance" },
+      taskDescription: { type: "string", description: "What you are about to work on (used for BM25 ranking)" },
+      topK: { type: "number", description: "Max constraint groups to return (default 20)" },
     },
     required: ["taskDescription"],
   },
@@ -20,7 +24,7 @@ export const sessionStartTool = {
 
 export function handleSessionStart(
   db: Database,
-  input: { agentId?: string; taskDescription: string }
+  input: { agentId?: string; taskDescription: string; topK?: number }
 ): {
   sessionId: string
   message: string
@@ -55,21 +59,37 @@ export function handleSessionStart(
   insertSession(db, session)
 
   const allDecisions = getAllDecisions(db, "active")
+  const topK = input.topK ?? SESSION_TOP_K
 
-  const activeConstraints = allDecisions
+  const retrieved = retrieveConstraintsByQuery(db, {
+    query: input.taskDescription,
+    topK,
+  })
+
+  const seenDesc = new Set<string>()
+  const activeConstraints = retrieved
+    .map((r) => r.record)
     .filter((d) => d.constraints.length > 0)
     .map((d) => ({
       decisionTitle: d.title,
-      constraints: d.constraints.map((c) => ({ severity: c.severity, description: c.description })),
+      constraints: d.constraints
+        .map((c) => ({ severity: c.severity, description: c.description }))
+        .filter((c) => {
+          const key = `${c.severity}:${c.description.toLowerCase().trim()}`
+          if (seenDesc.has(key)) return false
+          seenDesc.add(key)
+          return true
+        }),
     }))
+    .filter((ac) => ac.constraints.length > 0)
 
-  const doNotChangePatterns = allDecisions.flatMap((d) => d.doNotChange)
+  const doNotChangePatterns = [...new Set(retrieved.flatMap((r) => r.record.doNotChange))]
 
   return {
     sessionId,
-    message: `Session started. Loaded ${allDecisions.length} decision(s) with ${activeConstraints.length} having constraints. Review activeConstraints and doNotChangePatterns before making changes.`,
+    message: `Session started. Loaded ${activeConstraints.length} relevant constraint group(s) from ${allDecisions.length} total. Review activeConstraints and doNotChangePatterns before making changes.`,
     activeConstraints,
-    doNotChangePatterns: [...new Set(doNotChangePatterns)],
+    doNotChangePatterns,
     totalDecisions: allDecisions.length,
   }
 }

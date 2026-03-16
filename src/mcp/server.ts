@@ -13,6 +13,7 @@ import { getDb } from "../db/schema.js"
 import type { Database } from "../db/schema.js"
 import { getByPathTool, handleGetByPath } from "./tools/getByPath.js"
 import { getBySymbolTool, handleGetBySymbol } from "./tools/getBySymbol.js"
+import { retrieveConstraintsTool, handleRetrieveConstraints } from "./tools/retrieveConstraints.js"
 import { searchTool, handleSearch } from "./tools/search.js"
 import { recordTool, handleRecord } from "./tools/record.js"
 import { checkChangeTool, handleCheckChange } from "./tools/checkChange.js"
@@ -45,6 +46,7 @@ async function main(): Promise<void> {
       sessionEndTool,
       getByPathTool,
       getBySymbolTool,
+      retrieveConstraintsTool,
       searchTool,
       recordTool,
       checkChangeTool,
@@ -82,6 +84,9 @@ async function main(): Promise<void> {
           break
         case "oversight_get_by_symbol":
           result = handleGetBySymbol(db, input as Parameters<typeof handleGetBySymbol>[1])
+          break
+        case "oversight_retrieve_constraints":
+          result = handleRetrieveConstraints(db, input as Parameters<typeof handleRetrieveConstraints>[1])
           break
         case "oversight_search":
           result = handleSearch(db, input as Parameters<typeof handleSearch>[1])

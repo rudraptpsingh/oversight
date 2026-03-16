@@ -110,8 +110,8 @@ export interface StalenessResult {
 }
 
 export interface CheckChangeResult {
-  relevantDecisions: OversightRecord[]
-  mustConstraints: Constraint[]
+  relevantDecisions: OversightRecord[] | SlimDecision[]
+  mustConstraints: Constraint[] | SlimConstraint[]
   warnings: string[]
   riskLevel: "low" | "medium" | "high"
   proceed: boolean
@@ -136,4 +136,18 @@ export interface EnforcementConfig {
   mode: "advisory" | "blocking"
   blockOnMustViolation: boolean
   blockOnHighRisk: boolean
+}
+
+/** Slim constraint (no rationale) — reduces token usage. */
+export interface SlimConstraint {
+  severity: string
+  description: string
+}
+
+/** Slim decision — title, constraints, doNotChange only. Use when slim=true. */
+export interface SlimDecision {
+  title: string
+  constraints: SlimConstraint[]
+  doNotChange: string[]
+  agentHints?: Array<{ instruction: string }>
 }

@@ -30,4 +30,5 @@ export function registerCheck(program: Command): void {
         logger.decision(record)
       }
       logger.info("Dashboard: http://localhost:7654 — run `oversight dashboard` to start")
+    })
 }
