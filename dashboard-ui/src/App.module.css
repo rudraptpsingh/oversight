@@ -1,22 +1,55 @@
-.layout {
-  display: flex;
+.root {
   min-height: 100vh;
-}
-
-.main {
-  flex: 1;
-  min-width: 0;
-  padding: 24px 32px;
-  overflow-y: auto;
   background: var(--bg-base);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 80px;
 }
 
-@media (max-width: 768px) {
-  .layout {
-    flex-direction: column;
-  }
+.scoreboardWrap {
+  width: 100%;
+  max-width: 1100px;
+  padding: 0 24px;
+  margin-bottom: 8px;
+}
 
-  .main {
-    padding: 16px;
+.caseList {
+  width: 100%;
+  max-width: 1100px;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer {
+  width: 100%;
+  max-width: 1100px;
+  padding: 32px 24px 0;
+  margin-top: 24px;
+  border-top: 1px solid var(--border-muted);
+}
+
+.footer p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  text-align: center;
+}
+
+.footer code {
+  background: var(--bg-overlay);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+}
+
+@media (max-width: 640px) {
+  .scoreboardWrap,
+  .caseList,
+  .footer {
+    padding-left: 12px;
+    padding-right: 12px;
   }
 }

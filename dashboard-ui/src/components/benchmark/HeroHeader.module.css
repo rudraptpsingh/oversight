@@ -1,0 +1,144 @@
+.hero {
+  width: 100%;
+  max-width: 1100px;
+  text-align: center;
+  padding: 56px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.title {
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  max-width: 540px;
+}
+
+.agentLabels {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.agentPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.agentPill[data-agent="a"] {
+  background: var(--bg-overlay);
+  color: #8b949e;
+  border-color: var(--border);
+}
+
+.agentPill[data-agent="b"] {
+  background: rgba(121, 192, 255, 0.08);
+  color: var(--cyan);
+  border-color: rgba(121, 192, 255, 0.22);
+}
+
+.agentDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.agentPill[data-agent="a"] .agentDot {
+  background: #8b949e;
+}
+
+.agentPill[data-agent="b"] .agentDot {
+  background: var(--cyan);
+}
+
+.vsLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.actions {
+  margin-top: 8px;
+}
+
+.runBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 32px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: background 0.15s, opacity 0.15s, transform 0.1s;
+}
+
+.runBtn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.runBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+  .title {
+    font-size: 1.8rem;
+  }
+  .agentLabels {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .vsLabel {
+    display: none;
+  }
+}
