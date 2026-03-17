@@ -24,6 +24,8 @@ import { mergeTool, handleMerge } from "./tools/merge.js"
 import { sessionStartTool, handleSessionStart } from "./tools/sessionStart.js"
 import { sessionEndTool, handleSessionEnd } from "./tools/sessionEnd.js"
 import { generateHandoffTool, handleGenerateHandoff, receiveHandoffTool, handleReceiveHandoff } from "./tools/handoff.js"
+import { overrideTool, handleOverride } from "./tools/override.js"
+import { getSessionReportTool, handleGetSessionReport } from "./tools/getSessionReport.js"
 
 const require = createRequire(import.meta.url)
 const pkg = require("../../package.json") as { version: string }
@@ -56,6 +58,8 @@ async function main(): Promise<void> {
       mergeTool,
       generateHandoffTool,
       receiveHandoffTool,
+      overrideTool,
+      getSessionReportTool,
     ],
   }))
 
@@ -114,6 +118,12 @@ async function main(): Promise<void> {
           break
         case "oversight_receive_handoff":
           result = handleReceiveHandoff(db, input as Parameters<typeof handleReceiveHandoff>[1])
+          break
+        case "oversight_override":
+          result = handleOverride(db, input as Parameters<typeof handleOverride>[1])
+          break
+        case "oversight_get_session_report":
+          result = handleGetSessionReport(null, input as Parameters<typeof handleGetSessionReport>[1])
           break
         default:
           return {

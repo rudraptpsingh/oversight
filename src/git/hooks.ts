@@ -13,6 +13,9 @@ if [ -z "$CHANGED" ]; then
   exit 0
 fi
 
+# Run self-check to update session-report.json (non-blocking)
+npx tsx scripts/self-check.ts 2>/dev/null || true
+
 echo ""
 echo "Oversight: You modified files with recorded decisions."
 echo "Run 'oversight check <path>' to review before your next change."

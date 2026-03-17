@@ -65,8 +65,8 @@ describe("Auto-recording: deduplication via oversight_record", () => {
   beforeEach(() => { tmpdir = tmpDir() })
   afterEach(() => { fs.rmSync(tmpdir, { recursive: true, force: true }) })
 
-  it("inserts a fresh record when no similar exists", () => {
-    const db = initDb(tmpdir)
+  it("inserts a fresh record when no similar exists", async () => {
+    const db = await initDb(tmpdir)
     const result = handleRecord(db, {
       title: "Use Redis for session storage",
       summary: "Store sessions in Redis for distributed access",
@@ -79,8 +79,8 @@ describe("Auto-recording: deduplication via oversight_record", () => {
     expect(result.duplicateWarning).toBeUndefined()
   })
 
-  it("returns action=skipped and existing record when near-identical record exists (score >= 0.75)", () => {
-    const db = initDb(tmpdir)
+  it("returns action=skipped and existing record when near-identical record exists (score >= 0.75)", async () => {
+    const db = await initDb(tmpdir)
 
     const original = makeRecord()
     insertDecision(db, original)
@@ -100,8 +100,8 @@ describe("Auto-recording: deduplication via oversight_record", () => {
     expect(result.similarDecisions!.length).toBeGreaterThan(0)
   })
 
-  it("merges into existing record when moderately similar (score 0.55–0.75) and adds new constraints", () => {
-    const db = initDb(tmpdir)
+  it("merges into existing record when moderately similar (score 0.55–0.75) and adds new constraints", async () => {
+    const db = await initDb(tmpdir)
 
     const original = makeRecord({
       title: "JWT authentication must use verify",
@@ -141,8 +141,8 @@ describe("Auto-recording: deduplication via oversight_record", () => {
     }
   })
 
-  it("allowDuplicate=true forces insert even when near-identical exists", () => {
-    const db = initDb(tmpdir)
+  it("allowDuplicate=true forces insert even when near-identical exists", async () => {
+    const db = await initDb(tmpdir)
 
     const original = makeRecord()
     insertDecision(db, original)
@@ -160,8 +160,8 @@ describe("Auto-recording: deduplication via oversight_record", () => {
     expect(result.id).not.toBe(original.id)
   })
 
-  it("captures source/origin on insert and persists it", () => {
-    const db = initDb(tmpdir)
+  it("captures source/origin on insert and persists it", async () => {
+    const db = await initDb(tmpdir)
 
     const result = handleRecord(db, {
       title: "Use HTTPS for all payment endpoints",
@@ -186,8 +186,8 @@ describe("Auto-recording: deduplication via oversight_record", () => {
     expect(saved!.source!.excerpt).toContain("HTTPS")
   })
 
-  it("agent-decision origin is set by default when no source provided", () => {
-    const db = initDb(tmpdir)
+  it("agent-decision origin is set by default when no source provided", async () => {
+    const db = await initDb(tmpdir)
 
     const result = handleRecord(db, {
       title: "Use connection pooling for database",
@@ -210,8 +210,8 @@ describe("oversight_find_similar: pre-insert duplicate detection", () => {
   beforeEach(() => { tmpdir = tmpDir() })
   afterEach(() => { fs.rmSync(tmpdir, { recursive: true, force: true }) })
 
-  it("returns empty result and insert recommendation when no similar records exist", () => {
-    const db = initDb(tmpdir)
+  it("returns empty result and insert recommendation when no similar records exist", async () => {
+    const db = await initDb(tmpdir)
 
     const result = handleFindSimilar(db, {
       title: "Deploy with Kubernetes",
@@ -225,8 +225,8 @@ describe("oversight_find_similar: pre-insert duplicate detection", () => {
     expect(result.topMatches).toHaveLength(0)
   })
 
-  it("returns similar records with match reasons when overlap exists", () => {
-    const db = initDb(tmpdir)
+  it("returns similar records with match reasons when overlap exists", async () => {
+    const db = await initDb(tmpdir)
     insertDecision(db, makeRecord())
 
     const result = handleFindSimilar(db, {
@@ -244,8 +244,8 @@ describe("oversight_find_similar: pre-insert duplicate detection", () => {
     expect(result.topMatches[0].title).toBeDefined()
   })
 
-  it("respects custom threshold — higher threshold returns fewer matches", () => {
-    const db = initDb(tmpdir)
+  it("respects custom threshold — higher threshold returns fewer matches", async () => {
+    const db = await initDb(tmpdir)
     insertDecision(db, makeRecord())
 
     const looseResult = handleFindSimilar(db, {
@@ -265,8 +265,8 @@ describe("oversight_find_similar: pre-insert duplicate detection", () => {
     expect(looseResult.similar.length).toBeGreaterThanOrEqual(strictResult.similar.length)
   })
 
-  it("returns skip recommendation for near-identical record", () => {
-    const db = initDb(tmpdir)
+  it("returns skip recommendation for near-identical record", async () => {
+    const db = await initDb(tmpdir)
     insertDecision(db, makeRecord())
 
     const result = handleFindSimilar(db, {
@@ -289,8 +289,8 @@ describe("oversight_merge: consolidating duplicate decisions", () => {
   beforeEach(() => { tmpdir = tmpDir() })
   afterEach(() => { fs.rmSync(tmpdir, { recursive: true, force: true }) })
 
-  it("merges source constraints into target and marks source as superseded", () => {
-    const db = initDb(tmpdir)
+  it("merges source constraints into target and marks source as superseded", async () => {
+    const db = await initDb(tmpdir)
 
     const target = makeRecord({
       id: uuidv4(),
@@ -342,8 +342,8 @@ describe("oversight_merge: consolidating duplicate decisions", () => {
     expect(result.merged.supersedes).toContain(source.id)
   })
 
-  it("returns error for non-existent target", () => {
-    const db = initDb(tmpdir)
+  it("returns error for non-existent target", async () => {
+    const db = await initDb(tmpdir)
     insertDecision(db, makeRecord())
 
     const result = handleMerge(db, { targetId: "non-existent-id", sourceId: "also-non-existent" })
@@ -353,8 +353,8 @@ describe("oversight_merge: consolidating duplicate decisions", () => {
     }
   })
 
-  it("returns error when trying to merge a record into itself", () => {
-    const db = initDb(tmpdir)
+  it("returns error when trying to merge a record into itself", async () => {
+    const db = await initDb(tmpdir)
     const record = makeRecord()
     insertDecision(db, record)
 
@@ -365,8 +365,8 @@ describe("oversight_merge: consolidating duplicate decisions", () => {
     }
   })
 
-  it("merged record accumulates unique tags without duplication", () => {
-    const db = initDb(tmpdir)
+  it("merged record accumulates unique tags without duplication", async () => {
+    const db = await initDb(tmpdir)
 
     const target = makeRecord({ id: uuidv4(), tags: ["security", "jwt", "auth"] })
     const source = makeRecord({ id: uuidv4(), tags: ["security", "jwt", "incident-2023"] })
@@ -387,8 +387,8 @@ describe("oversight_merge: consolidating duplicate decisions", () => {
     expect(tags).toContain("incident-2023")
   })
 
-  it("merged record promotes to higher confidence level", () => {
-    const db = initDb(tmpdir)
+  it("merged record promotes to higher confidence level", async () => {
+    const db = await initDb(tmpdir)
 
     const target = makeRecord({ id: uuidv4(), confidence: "exploratory" })
     const source = makeRecord({ id: uuidv4(), confidence: "definitive" })
@@ -411,8 +411,8 @@ describe("checkForDuplicates: scoring and recommendation logic", () => {
   beforeEach(() => { tmpdir = tmpDir() })
   afterEach(() => { fs.rmSync(tmpdir, { recursive: true, force: true }) })
 
-  it("recommendation=insert when no similar records", () => {
-    const db = initDb(tmpdir)
+  it("recommendation=insert when no similar records", async () => {
+    const db = await initDb(tmpdir)
     const result = checkForDuplicates(db, {
       title: "GraphQL for public API",
       summary: "Adopt GraphQL to reduce over-fetching",
@@ -422,8 +422,8 @@ describe("checkForDuplicates: scoring and recommendation logic", () => {
     expect(result.hasDuplicates).toBe(false)
   })
 
-  it("recommendation=skip when record is essentially identical", () => {
-    const db = initDb(tmpdir)
+  it("recommendation=skip when record is essentially identical", async () => {
+    const db = await initDb(tmpdir)
     const record = makeRecord()
     insertDecision(db, record)
 
@@ -439,8 +439,8 @@ describe("checkForDuplicates: scoring and recommendation logic", () => {
     expect(result.recommendedTargetId).toBe(record.id)
   })
 
-  it("findSimilarDecisions returns top 5 results max", () => {
-    const db = initDb(tmpdir)
+  it("findSimilarDecisions returns top 5 results max", async () => {
+    const db = await initDb(tmpdir)
 
     for (let i = 0; i < 10; i++) {
       insertDecision(db, makeRecord({
@@ -461,8 +461,8 @@ describe("checkForDuplicates: scoring and recommendation logic", () => {
     expect(results.every((r) => r.score >= 0.35)).toBe(true)
   })
 
-  it("results are sorted by score descending", () => {
-    const db = initDb(tmpdir)
+  it("results are sorted by score descending", async () => {
+    const db = await initDb(tmpdir)
 
     insertDecision(db, makeRecord({
       id: uuidv4(),
@@ -497,8 +497,8 @@ describe("Agent re-recording prevention: realistic coding agent scenarios", () =
   beforeEach(() => { tmpdir = tmpDir() })
   afterEach(() => { fs.rmSync(tmpdir, { recursive: true, force: true }) })
 
-  it("Agent A and Agent B independently discover same constraint — only one record persists", () => {
-    const db = initDb(tmpdir)
+  it("Agent A and Agent B independently discover same constraint — only one record persists", async () => {
+    const db = await initDb(tmpdir)
 
     const agentAResult = handleRecord(db, {
       title: "Rate limiter must use atomic Redis INCR",
@@ -524,8 +524,8 @@ describe("Agent re-recording prevention: realistic coding agent scenarios", () =
     expect(agentBResult.duplicateWarning).toBeDefined()
   })
 
-  it("User states constraint in chat → auto-recorded → agent re-records same constraint → merge/skip", () => {
-    const db = initDb(tmpdir)
+  it("User states constraint in chat → auto-recorded → agent re-records same constraint → merge/skip", async () => {
+    const db = await initDb(tmpdir)
 
     const userCaptured = handleRecord(db, {
       title: "Database connections must use connection pooling",
@@ -556,8 +556,8 @@ describe("Agent re-recording prevention: realistic coding agent scenarios", () =
     }
   })
 
-  it("Constraint from incident report merged with constraint from code review adds unique hints", () => {
-    const db = initDb(tmpdir)
+  it("Constraint from incident report merged with constraint from code review adds unique hints", async () => {
+    const db = await initDb(tmpdir)
 
     const incidentRecord = handleRecord(db, {
       title: "DB connection must be released in finally block",

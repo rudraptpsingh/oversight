@@ -62,6 +62,55 @@ export async function initDb(oversightDir: string): Promise<Database> {
       summary TEXT NOT NULL DEFAULT '',
       handoff_notes TEXT NOT NULL DEFAULT ''
     );
+
+    -- Materialized constraints table synced from decisions.constraints_json on every write.
+    -- Enables per-constraint confidence tracking, consistency scoring, and override history.
+    CREATE TABLE IF NOT EXISTS constraints (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      decision_id TEXT NOT NULL REFERENCES decisions(id),
+      description TEXT NOT NULL,
+      severity TEXT NOT NULL DEFAULT 'should',
+      rationale TEXT NOT NULL DEFAULT '',
+      confidence REAL NOT NULL DEFAULT 0.5,
+      check_count INTEGER NOT NULL DEFAULT 0,
+      override_count INTEGER NOT NULL DEFAULT 0,
+      consistency_score REAL NOT NULL DEFAULT 0.5,
+      last_checked INTEGER,
+      precondition TEXT,
+      invariant INTEGER NOT NULL DEFAULT 0,
+      recovery TEXT
+    );
+
+    -- Confidence history per constraint for sparklines and drift analysis.
+    CREATE TABLE IF NOT EXISTS constraint_confidence_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      constraint_id INTEGER NOT NULL,
+      confidence REAL NOT NULL,
+      recorded_at INTEGER NOT NULL,
+      event_type TEXT NOT NULL
+    );
+
+    -- Override events: tracks when agents deliberately bypass constraints.
+    CREATE TABLE IF NOT EXISTS override_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      constraint_id INTEGER,
+      decision_id TEXT,
+      commit_sha TEXT,
+      rationale TEXT NOT NULL,
+      intent_class TEXT NOT NULL DEFAULT 'unknown',
+      created_at INTEGER NOT NULL
+    );
+
+    -- Regression links: maps CI test failures to decisions.
+    CREATE TABLE IF NOT EXISTS regression_links (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      decision_id TEXT,
+      commit_sha TEXT NOT NULL,
+      test_name TEXT NOT NULL,
+      failure_message TEXT,
+      resolved INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL
+    );
   `)
 
   return db

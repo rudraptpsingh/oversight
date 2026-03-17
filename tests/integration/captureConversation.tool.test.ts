@@ -58,7 +58,7 @@ describe("handleCaptureConversation", () => {
   afterEach(() => { fs.rmSync(tmpdir, { recursive: true, force: true }) })
 
   it("inserts a new decision when no duplicates exist", async () => {
-    const db = initDb(tmpdir)
+    const db = await initDb(tmpdir)
     const record = makeExtractedRecord()
     mockExtract.mockResolvedValueOnce([record])
 
@@ -77,7 +77,7 @@ describe("handleCaptureConversation", () => {
   })
 
   it("returns empty result when AI extracts no decisions", async () => {
-    const db = initDb(tmpdir)
+    const db = await initDb(tmpdir)
     mockExtract.mockResolvedValueOnce([])
 
     const result = await handleCaptureConversation(db, {
@@ -92,7 +92,7 @@ describe("handleCaptureConversation", () => {
   })
 
   it("skips near-identical duplicate decisions", async () => {
-    const db = initDb(tmpdir)
+    const db = await initDb(tmpdir)
     const existing = makeExtractedRecord()
     insertDecision(db, existing)
 
@@ -111,7 +111,7 @@ describe("handleCaptureConversation", () => {
   })
 
   it("merges similar (but not identical) decisions", async () => {
-    const db = initDb(tmpdir)
+    const db = await initDb(tmpdir)
     const existing = makeExtractedRecord({ tags: ["redis"] })
     insertDecision(db, existing)
 
@@ -135,7 +135,7 @@ describe("handleCaptureConversation", () => {
   })
 
   it("handles multiple decisions in one conversation", async () => {
-    const db = initDb(tmpdir)
+    const db = await initDb(tmpdir)
     const records = [
       makeExtractedRecord({ id: uuidv4(), title: "Use Redis for sessions" }),
       makeExtractedRecord({ id: uuidv4(), title: "JWT for API tokens", summary: "JWT tokens for stateless API auth", decision: "JWT tokens", context: "API auth", tags: ["jwt", "auth"] }),
@@ -153,7 +153,7 @@ describe("handleCaptureConversation", () => {
   })
 
   it("records errors when extraction throws", async () => {
-    const db = initDb(tmpdir)
+    const db = await initDb(tmpdir)
     mockExtract.mockRejectedValueOnce(new Error("API rate limit"))
 
     const result = await handleCaptureConversation(db, {
@@ -168,7 +168,7 @@ describe("handleCaptureConversation", () => {
   })
 
   it("persists inserted decisions to the database", async () => {
-    const db = initDb(tmpdir)
+    const db = await initDb(tmpdir)
     const record = makeExtractedRecord()
     mockExtract.mockResolvedValueOnce([record])
 
@@ -183,7 +183,7 @@ describe("handleCaptureConversation", () => {
   })
 
   it("passes source origin to extractDecisionsFromConversation", async () => {
-    const db = initDb(tmpdir)
+    const db = await initDb(tmpdir)
     mockExtract.mockResolvedValueOnce([])
 
     await handleCaptureConversation(db, {
@@ -199,7 +199,7 @@ describe("handleCaptureConversation", () => {
   })
 
   it("handles partial failure — inserts what succeeds, records error for the rest", async () => {
-    const db = initDb(tmpdir)
+    const db = await initDb(tmpdir)
     const good = makeExtractedRecord({ id: uuidv4(), title: "Good decision" })
     const badRecord = { ...makeExtractedRecord({ id: uuidv4(), title: "Bad decision" }), id: null as unknown as string }
     mockExtract.mockResolvedValueOnce([good, badRecord])
