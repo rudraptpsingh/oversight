@@ -379,21 +379,6 @@ New workspace: `oversight-github-app/`
 
 ---
 
-## Phase 5: Cloud Sync (Weeks 7–8) — MEDIUM
-
-Supabase free tier. Local-first architecture.
-
-New files:
-- `src/cloud/sync.ts` — push/pull/status logic
-- `src/cli/commands/sync.ts` — CLI commands
-
-New CLI commands:
-- `oversight sync push` — upload all active decisions
-- `oversight sync pull` — download team decisions newer than last pull
-- `oversight sync status` — pending changes, conflicts, last sync timestamp
-- `oversight team decisions list` — org-wide decisions from all repos
-
----
 
 ## Benchmarking Strategy (Research-Backed, Run Throughout All Phases)
 
@@ -492,7 +477,6 @@ New CLI commands:
 | Dev sees constraint health at a glance | Confidence dashboard page | Phase 2 |
 | Dev sees what decisions need attention | Backlog page with priority swimlanes | Phase 2 |
 | CI catches constraint violations in PR | GitHub App + check runs | Phase 4 |
-| Team shares decisions across machines | Cloud sync push/pull | Phase 5 |
 | Engineering manager sees coverage | Coverage page + coverage badge | Phase 4 |
 
 ---
@@ -514,7 +498,6 @@ New CLI commands:
 | CI catches violations in PR | - | GitHub App + check runs | Phase 4 |
 | Long-session constraint persistence | Context-Bench: constraints forgotten in long sessions | invariant flag on constraints | Research improvement C |
 | Memory poisoning defense | TRiSM: emerging attack vector | decisions.db integrity + override audit trail | Phase 1 |
-| Team shares decisions across machines | - | Cloud sync push/pull | Phase 5 |
 
 ---
 
@@ -548,9 +531,8 @@ Week 2:  Self-check script + backlog generator + oversight_override + oversight_
 Week 3:  4 dashboard pages — MVP-1 GATE
 Week 4:  oversight_promote + oversight_link_regression
 Week 5:  CI JSON output (--json flag, 1 day) + GitHub App start
-Week 6:  GitHub App complete + coverage badge
-Week 7:  Cloud sync infrastructure
-Week 8:  Launch: HN + npm v1.0.0 + oversight.run/benchmark live — MVP-2 GATE
+Week 6:  GitHub App complete + coverage badge — MVP-2 GATE
+Week 7+: Benchmarks + HN + npm v1.0.0 + oversight.run/benchmark live
 ```
 
 ---
@@ -601,8 +583,6 @@ Week 8:  Launch: HN + npm v1.0.0 + oversight.run/benchmark live — MVP-2 GATE
 | `src/ui/pages/CoveragePage.tsx` | Coverage heatmap |
 | `src/ui/pages/RegressionsPage.tsx` | Regression-to-decision linkage log |
 | `oversight-github-app/` | Probot GitHub App (new workspace) |
-| `src/cloud/sync.ts` | Cloud sync push/pull/status |
-| `src/cli/commands/sync.ts` | CLI sync commands |
 
 ---
 

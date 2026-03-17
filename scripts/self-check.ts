@@ -15,6 +15,7 @@ import { runAutoPromote, runAutoDowngrade, computeDriftBound } from "../src/engi
 
 interface SessionReport {
   generatedAt: string
+  constraint_snapshot?: Record<number, number>  // constraintId → confidence (for next diff)
   summary: {
     decision_quality_avg: number
     coverage_score: number
@@ -172,33 +173,40 @@ async function main(): Promise<void> {
     "SELECT COUNT(*) as cnt FROM override_events WHERE intent_class = 'task_pressure'"
   ).get() as { cnt: number }
 
-  // --- Confidence deltas (compare to previous report) ---
+  // --- Confidence deltas (compare to previous report's constraint_snapshot) ---
+  const currentConstraints = db.prepare(
+    "SELECT id, description, decision_id, confidence FROM constraints"
+  ).all() as Array<{ id: number; description: string; decision_id: string; confidence: number }>
+
   const confidence_deltas: SessionReport["confidence_deltas"] = []
   try {
     const reportPath = path.join(oversightDir, "session-report.json")
     if (fs.existsSync(reportPath)) {
-      const prev = JSON.parse(fs.readFileSync(reportPath, "utf-8")) as SessionReport
-      const prevMap = new Map(prev.confidence_deltas?.map((d) => [d.constraintId, d.newConfidence]) ?? [])
-
-      const currentConstraints = db.prepare(
-        "SELECT id, description, decision_id, confidence FROM constraints"
-      ).all() as Array<{ id: number; description: string; decision_id: string; confidence: number }>
+      const prevReport = JSON.parse(fs.readFileSync(reportPath, "utf-8")) as SessionReport
+      // Use constraint_snapshot if present, fall back to confidence_deltas for backwards compat
+      const prevMap: Map<number, number> = prevReport.constraint_snapshot
+        ? new Map(Object.entries(prevReport.constraint_snapshot).map(([k, v]) => [Number(k), v as number]))
+        : new Map(prevReport.confidence_deltas?.map((d) => [d.constraintId, d.newConfidence]) ?? [])
 
       for (const c of currentConstraints) {
-        const prev = prevMap.get(c.id)
-        if (prev !== undefined && Math.abs(c.confidence - prev) > 0.001) {
+        const prevConf = prevMap.get(c.id)
+        if (prevConf !== undefined && Math.abs(c.confidence - prevConf) > 0.001) {
           confidence_deltas.push({
             constraintId: c.id,
             description: c.description,
             decisionId: c.decision_id,
-            prevConfidence: prev,
+            prevConfidence: prevConf,
             newConfidence: c.confidence,
-            delta: c.confidence - prev,
+            delta: c.confidence - prevConf,
           })
         }
       }
     }
   } catch { /* best-effort */ }
+
+  // Build snapshot of current confidences for next diff
+  const constraint_snapshot: Record<number, number> = {}
+  for (const c of currentConstraints) constraint_snapshot[c.id] = c.confidence
 
   // --- Coverage gaps ---
   const coverage_gaps: SessionReport["coverage_gaps"] = recentFiles
@@ -249,6 +257,7 @@ async function main(): Promise<void> {
 
   const report: SessionReport = {
     generatedAt: new Date().toISOString(),
+    constraint_snapshot,
     summary: {
       decision_quality_avg: Math.round(decision_quality_avg * 100) / 100,
       coverage_score,

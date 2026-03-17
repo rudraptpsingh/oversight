@@ -253,7 +253,7 @@ export function getDecisionsByPath(db: Database, filePath: string): OversightRec
           const pattern = anchor.glob ?? anchor.path
           return matchesGlob(pattern, normalizedPath)
         }
-        const anchorPath = anchor.path.replace(/^\.\//, "").replace(/\\/g, "/")
+        const anchorPath = anchor.path.replace(/^\.\//, "").replace(/\\/g, "/").replace(/\/$/, "")
         return (
           anchorPath === normalizedPath ||
           normalizedPath.startsWith(anchorPath + "/") ||
