@@ -89,12 +89,12 @@ function getRecentlyChangedFiles(): string[] {
   }
 }
 
-function getGitFileCount(): number {
+function getGitFiles(): string[] {
   try {
-    const result = execSync("git ls-files 2>/dev/null | wc -l", { encoding: "utf-8" })
-    return parseInt(result.trim(), 10) || 0
+    return execSync("git ls-files 2>/dev/null", { encoding: "utf-8" })
+      .split("\n").map(f => f.trim()).filter(Boolean)
   } catch {
-    return 0
+    return []
   }
 }
 
@@ -129,7 +129,8 @@ async function main(): Promise<void> {
 
   const allDecisions = getAllDecisions(db, "active")
   const recentFiles = getRecentlyChangedFiles()
-  const gitFileCount = getGitFileCount()
+  const gitFiles = getGitFiles()
+  const gitFileCount = gitFiles.length
 
   // --- Summary ---
   const qualityScores = allDecisions.map((d) => scoreDecisionQuality(d as Parameters<typeof scoreDecisionQuality>[0]))
@@ -137,11 +138,26 @@ async function main(): Promise<void> {
     ? qualityScores.reduce((a, b) => a + b, 0) / qualityScores.length
     : 0
 
-  const anchoredPaths = new Set<string>()
-  for (const d of allDecisions) {
-    for (const a of d.anchors) anchoredPaths.add(a.path)
+  // Coverage: count git-tracked files matched by at least one anchor (same logic as getDecisionsByPath)
+  const coveredFiles = new Set<string>()
+  for (const f of gitFiles) {
+    const nf = f.replace(/^\.\//, "").replace(/\\/g, "/")
+    const covered = allDecisions.some(d => d.anchors.some(a => {
+      if (a.type === "glob") {
+        const pattern = (a.glob ?? a.path)
+          .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+          .replace(/\*\*/g, "\u0000").replace(/\*/g, "[^/]*")
+          .replace(/\u0000/g, ".*").replace(/\?/g, "[^/]")
+        return new RegExp(`^${pattern}$`).test(nf)
+      }
+      const ap = a.path.replace(/^\.\//, "").replace(/\\/g, "/").replace(/\/$/, "")
+      return ap === nf || nf.startsWith(ap + "/") || ap.startsWith(nf + "/")
+    }))
+    if (covered) coveredFiles.add(nf)
   }
-  const coverage_score = gitFileCount > 0 ? Math.min(100, Math.round((anchoredPaths.size / gitFileCount) * 100)) : 0
+  const coverage_score = gitFileCount > 0
+    ? Math.min(100, Math.round((coveredFiles.size / gitFileCount) * 100))
+    : 0
 
   const constraintStats = db.prepare(
     "SELECT AVG(confidence) as avg_conf, AVG(consistency_score) as avg_consistency, COUNT(*) as cnt FROM constraints"
@@ -210,7 +226,7 @@ async function main(): Promise<void> {
 
   // --- Coverage gaps ---
   const coverage_gaps: SessionReport["coverage_gaps"] = recentFiles
-    .filter((f) => ![...anchoredPaths].some((p) => f.includes(p) || p.includes(f)))
+    .filter((f) => !coveredFiles.has(f.replace(/^\.\//, "").replace(/\\/g, "/")))
     .map((f) => ({
       file: f,
       change_frequency: 1,

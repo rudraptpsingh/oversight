@@ -86,9 +86,11 @@ export function generateBacklog(
     }
 
     for (const file of recentlyChangedFiles) {
-      const isAnchored = [...anchoredPaths].some(
-        (p) => file.includes(p) || p.includes(file)
-      )
+      const normalizedFile = file.replace(/^\.\//, "").replace(/\\/g, "/")
+      const isAnchored = [...anchoredPaths].some((p) => {
+        const ap = p.replace(/^\.\//, "").replace(/\\/g, "/").replace(/\/$/, "")
+        return ap === normalizedFile || normalizedFile.startsWith(ap + "/") || ap.startsWith(normalizedFile + "/")
+      })
       if (!isAnchored) {
         items.push({
           id: `capture-${file.replace(/[^a-z0-9]/gi, "-")}`,
