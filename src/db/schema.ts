@@ -118,6 +118,12 @@ export async function initDb(oversightDir: string): Promise<Database> {
     );
   `)
 
+  // Additive migration: add enforcement_outcome column if not present (existing DBs safe)
+  const cols = db.prepare("PRAGMA table_info(check_change_log)").all() as Array<{ name: string }>
+  if (!cols.some(c => c.name === "enforcement_outcome")) {
+    db.prepare("ALTER TABLE check_change_log ADD COLUMN enforcement_outcome TEXT").run()
+  }
+
   return db
 }
 

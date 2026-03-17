@@ -1,5 +1,5 @@
 import type { Database } from "./adapter.js"
-import type { OversightRecord, CheckChangeResult, DecisionType, Confidence } from "../types/index.js"
+import type { OversightRecord, CheckChangeResult, DecisionType, Confidence, EnforcementOutcome } from "../types/index.js"
 
 export interface CheckChangeLogEntry {
   changeDescription: string
@@ -10,6 +10,7 @@ export interface CheckChangeLogEntry {
   riskLevel: "low" | "medium" | "high"
   warningCount: number
   timestamp: string
+  enforcementOutcome?: EnforcementOutcome
 }
 
 export interface OversightMetrics {
@@ -50,8 +51,9 @@ export function logCheckChange(db: Database, entry: CheckChangeLogEntry): void {
   db.prepare(`
     INSERT INTO check_change_log
       (change_description, affected_paths_json, relevant_decision_ids_json,
-       must_constraint_count, should_constraint_count, risk_level, warning_count, timestamp)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+       must_constraint_count, should_constraint_count, risk_level, warning_count,
+       timestamp, enforcement_outcome)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     entry.changeDescription,
     JSON.stringify(entry.affectedPaths),
@@ -61,6 +63,7 @@ export function logCheckChange(db: Database, entry: CheckChangeLogEntry): void {
     entry.riskLevel,
     entry.warningCount,
     entry.timestamp,
+    entry.enforcementOutcome ?? null,
   )
 }
 

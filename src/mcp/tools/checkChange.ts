@@ -82,10 +82,8 @@ export function handleCheckChange(
   const allPathMatched: OversightRecord[] = []
   const seen = new Set<string>()
   for (const filePath of input.affectedPaths) {
-    const basename = filePath.split("/").pop() ?? filePath
     const decisions = getDecisionsByPath(db, filePath)
-    const extra = basename !== filePath ? getDecisionsByPath(db, basename) : []
-    for (const d of [...decisions, ...extra]) {
+    for (const d of decisions) {
       if (!seen.has(d.id) && (d.status === "active" || d.status === "proposed")) {
         seen.add(d.id)
         allPathMatched.push(d)
@@ -189,6 +187,7 @@ export function handleCheckChange(
       riskLevel,
       warningCount: warnings.length,
       timestamp: new Date().toISOString(),
+      enforcementOutcome,
     })
   } catch {
     // metrics logging is best-effort

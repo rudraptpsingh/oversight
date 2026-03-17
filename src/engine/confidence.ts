@@ -9,23 +9,27 @@ const HISTORY_EVENT_DOWNGRADE = "downgrade"
 const CONSISTENCY_WINDOW = 8
 
 /**
- * Called after a constraint passes check_change without violation.
- * Exponential smoothing: conf += 0.02 * (1 - conf)  — asymptotes to 1.0
+ * Called after a constraint is encountered in check_change.
+ * - violated=false (default): confidence rises via exponential smoothing (asymptotes to 1.0)
+ * - violated=true: MUST constraint fired as warning — check_count increments so auto-promote
+ *   thresholds can be reached, but confidence stays flat (no reward for being warned about).
  */
-export function onRespectedCheck(db: Database, constraintId: number): void {
+export function onRespectedCheck(db: Database, constraintId: number, violated = false): void {
   const row = db.prepare("SELECT confidence, check_count FROM constraints WHERE id = ?").get(constraintId) as
     | { confidence: number; check_count: number }
     | undefined
   if (!row) return
 
-  const newConf = row.confidence + 0.02 * (1 - row.confidence)
+  const newConf = violated
+    ? row.confidence
+    : row.confidence + 0.02 * (1 - row.confidence)
   const now = Date.now()
 
   db.prepare(
     "UPDATE constraints SET confidence = ?, check_count = check_count + 1, last_checked = ? WHERE id = ?"
   ).run(newConf, now, constraintId)
 
-  updateConsistencyScore(db, constraintId, true)
+  updateConsistencyScore(db, constraintId, !violated)
 
   db.prepare(
     "INSERT INTO constraint_confidence_history (constraint_id, confidence, recorded_at, event_type) VALUES (?, ?, ?, ?)"
@@ -182,8 +186,7 @@ export function recordRespectedConstraints(
   ).all(...decisionIds) as Array<{ id: number; description: string }>
 
   for (const row of rows) {
-    if (!violatedDescriptions.has(row.description.toLowerCase().trim())) {
-      onRespectedCheck(db, row.id)
-    }
+    const violated = violatedDescriptions.has(row.description.toLowerCase().trim())
+    onRespectedCheck(db, row.id, violated)
   }
 }
