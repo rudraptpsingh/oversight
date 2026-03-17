@@ -53,41 +53,41 @@ function makeRecord(overrides: Partial<OversightRecord> = {}): OversightRecord {
 }
 
 describe("generate command logic (generateOversightMd)", () => {
-  it("produces a markdown file with OVERSIGHT.md header", () => {
+  it("produces a markdown file with OVERSIGHT.md header", async () => {
     const md = generateOversightMd([makeRecord()])
     expect(md).toContain("# OVERSIGHT.md")
   })
 
-  it("includes must constraints in Hard Constraints section", () => {
+  it("includes must constraints in Hard Constraints section", async () => {
     const md = generateOversightMd([makeRecord()])
     expect(md).toContain("## Hard Constraints (must)")
     expect(md).toContain("Never log raw card numbers")
   })
 
-  it("includes should constraints in Soft Constraints section", () => {
+  it("includes should constraints in Soft Constraints section", async () => {
     const md = generateOversightMd([makeRecord()])
     expect(md).toContain("## Soft Constraints (should)")
     expect(md).toContain("Use TLS 1.2+")
   })
 
-  it("includes doNotChange patterns", () => {
+  it("includes doNotChange patterns", async () => {
     const md = generateOversightMd([makeRecord()])
     expect(md).toContain("## Do-Not-Change Patterns")
     expect(md).toContain("src/payments/masking.ts")
   })
 
-  it("includes decision summaries section", () => {
+  it("includes decision summaries section", async () => {
     const md = generateOversightMd([makeRecord()])
     expect(md).toContain("## Decision Summaries")
     expect(md).toContain("### PCI compliance for payment data")
   })
 
-  it("includes agent hints in the decision summary", () => {
+  it("includes agent hints in the decision summary", async () => {
     const md = generateOversightMd([makeRecord()])
     expect(md).toContain("Always mask PAN before logging")
   })
 
-  it("only includes active decisions", () => {
+  it("only includes active decisions", async () => {
     const records = [
       makeRecord({ id: uuidv4(), title: "Active one" }),
       makeRecord({ id: uuidv4(), title: "Superseded one", status: "superseded" }),
@@ -97,18 +97,18 @@ describe("generate command logic (generateOversightMd)", () => {
     expect(md).not.toContain("Superseded one")
   })
 
-  it("produces empty sections when no decisions exist", () => {
+  it("produces empty sections when no decisions exist", async () => {
     const md = generateOversightMd([])
     expect(md).toContain("# OVERSIGHT.md")
     expect(md).not.toContain("## Hard Constraints")
     expect(md).not.toContain("## Decision Summaries")
   })
 
-  it("generate writes OVERSIGHT.md to disk when decisions exist", () => {
+  it("generate writes OVERSIGHT.md to disk when decisions exist", async () => {
     const base = tmpDir()
     try {
       const oversightDir = setupOversightDir(base)
-      const db = initDb(oversightDir)
+      const db = await initDb(oversightDir)
       insertDecision(db, makeRecord())
 
       const decisions = getAllDecisions(db, "active")
@@ -136,8 +136,8 @@ describe("export command logic", () => {
   })
   afterEach(() => { fs.rmSync(base, { recursive: true, force: true }) })
 
-  it("exports active decisions to JSON structure", () => {
-    const db = initDb(oversightDir)
+  it("exports active decisions to JSON structure", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord())
 
     const decisions = getAllDecisions(db, "active")
@@ -150,8 +150,8 @@ describe("export command logic", () => {
     expect(parsed.exportedAt).toBeDefined()
   })
 
-  it("exports all statuses when status=all", () => {
-    const db = initDb(oversightDir)
+  it("exports all statuses when status=all", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord({ id: uuidv4() }))
     insertDecision(db, makeRecord({ id: uuidv4(), status: "superseded" }))
     insertDecision(db, makeRecord({ id: uuidv4(), status: "deprecated" }))
@@ -160,8 +160,8 @@ describe("export command logic", () => {
     expect(all.length).toBe(3)
   })
 
-  it("exports only active decisions by default", () => {
-    const db = initDb(oversightDir)
+  it("exports only active decisions by default", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord({ id: uuidv4() }))
     insertDecision(db, makeRecord({ id: uuidv4(), status: "superseded" }))
 
@@ -169,8 +169,8 @@ describe("export command logic", () => {
     expect(active.length).toBe(1)
   })
 
-  it("writes JSON file to disk", () => {
-    const db = initDb(oversightDir)
+  it("writes JSON file to disk", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord())
 
     const decisions = getAllDecisions(db, "active")
@@ -195,8 +195,8 @@ describe("list command logic", () => {
   })
   afterEach(() => { fs.rmSync(base, { recursive: true, force: true }) })
 
-  it("returns active decisions by default", () => {
-    const db = initDb(oversightDir)
+  it("returns active decisions by default", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord({ id: uuidv4() }))
     insertDecision(db, makeRecord({ id: uuidv4(), status: "superseded" }))
 
@@ -204,8 +204,8 @@ describe("list command logic", () => {
     expect(active).toHaveLength(1)
   })
 
-  it("filters by tag", () => {
-    const db = initDb(oversightDir)
+  it("filters by tag", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord({ id: uuidv4(), tags: ["pci", "security"] }))
     insertDecision(db, makeRecord({ id: uuidv4(), tags: ["performance"] }))
 
@@ -215,8 +215,8 @@ describe("list command logic", () => {
     expect(filtered[0].tags).toContain("pci")
   })
 
-  it("filters by decision type", () => {
-    const db = initDb(oversightDir)
+  it("filters by decision type", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord({ id: uuidv4(), decisionType: "compliance" }))
     insertDecision(db, makeRecord({ id: uuidv4(), decisionType: "performance" }))
 
@@ -225,8 +225,8 @@ describe("list command logic", () => {
     expect(compliance).toHaveLength(1)
   })
 
-  it("returns empty array when no records exist", () => {
-    const db = initDb(oversightDir)
+  it("returns empty array when no records exist", async () => {
+    const db = await initDb(oversightDir)
     expect(getAllDecisions(db, "active")).toHaveLength(0)
   })
 })
@@ -241,8 +241,8 @@ describe("check command logic (handleCheckChange)", () => {
   })
   afterEach(() => { fs.rmSync(base, { recursive: true, force: true }) })
 
-  it("flags high risk when path has must constraints", () => {
-    const db = initDb(oversightDir)
+  it("flags high risk when path has must constraints", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord())
 
     const result = handleCheckChange(db, {
@@ -255,8 +255,8 @@ describe("check command logic (handleCheckChange)", () => {
     expect(result.mustConstraints.length).toBeGreaterThan(0)
   })
 
-  it("returns low risk for paths with no decisions", () => {
-    const db = initDb(oversightDir)
+  it("returns low risk for paths with no decisions", async () => {
+    const db = await initDb(oversightDir)
     const result = handleCheckChange(db, {
       changeDescription: "Add unit test",
       affectedPaths: ["tests/new.test.ts"],
@@ -265,8 +265,8 @@ describe("check command logic (handleCheckChange)", () => {
     expect(result.warnings).toHaveLength(0)
   })
 
-  it("proceed is true for low-risk changes", () => {
-    const db = initDb(oversightDir)
+  it("proceed is true for low-risk changes", async () => {
+    const db = await initDb(oversightDir)
     const result = handleCheckChange(db, {
       changeDescription: "Rename variable",
       affectedPaths: ["src/utils/helper.ts"],
@@ -274,8 +274,8 @@ describe("check command logic (handleCheckChange)", () => {
     expect(result.proceed).toBe(true)
   })
 
-  it("includes relevant decisions in the result", () => {
-    const db = initDb(oversightDir)
+  it("includes relevant decisions in the result", async () => {
+    const db = await initDb(oversightDir)
     const r = makeRecord()
     insertDecision(db, r)
 
@@ -298,27 +298,27 @@ describe("enforce command logic (readEnforcement / writeEnforcement)", () => {
   })
   afterEach(() => { fs.rmSync(base, { recursive: true, force: true }) })
 
-  it("defaults to advisory mode when no enforcement.json exists", () => {
+  it("defaults to advisory mode when no enforcement.json exists", async () => {
     const cfg = readEnforcement(base)
     expect(cfg.mode).toBe("advisory")
     expect(cfg.blockOnMustViolation).toBe(false)
     expect(cfg.blockOnHighRisk).toBe(false)
   })
 
-  it("enables blocking mode after enforce on", () => {
+  it("enables blocking mode after enforce on", async () => {
     writeEnforcement({ mode: "blocking", blockOnMustViolation: true, blockOnHighRisk: false }, base)
     const cfg = readEnforcement(base)
     expect(cfg.mode).toBe("blocking")
     expect(cfg.blockOnMustViolation).toBe(true)
   })
 
-  it("enables strict blocking mode", () => {
+  it("enables strict blocking mode", async () => {
     writeEnforcement({ mode: "blocking", blockOnMustViolation: true, blockOnHighRisk: true }, base)
     const cfg = readEnforcement(base)
     expect(cfg.blockOnHighRisk).toBe(true)
   })
 
-  it("disables blocking after enforce off", () => {
+  it("disables blocking after enforce off", async () => {
     writeEnforcement({ mode: "blocking", blockOnMustViolation: true, blockOnHighRisk: true }, base)
     writeEnforcement({ mode: "advisory", blockOnMustViolation: false, blockOnHighRisk: false }, base)
     const cfg = readEnforcement(base)
@@ -326,7 +326,7 @@ describe("enforce command logic (readEnforcement / writeEnforcement)", () => {
     expect(cfg.blockOnMustViolation).toBe(false)
   })
 
-  it("persists enforcement.json to disk", () => {
+  it("persists enforcement.json to disk", async () => {
     writeEnforcement({ mode: "blocking", blockOnMustViolation: true, blockOnHighRisk: false }, base)
     const enfPath = path.join(base, ".oversight", "enforcement.json")
     expect(fs.existsSync(enfPath)).toBe(true)
@@ -334,10 +334,10 @@ describe("enforce command logic (readEnforcement / writeEnforcement)", () => {
     expect(content.mode).toBe("blocking")
   })
 
-  it("blocked is true in blocking mode with must violations", () => {
+  it("blocked is true in blocking mode with must violations", async () => {
     const oversightDir = path.join(base, ".oversight")
     writeEnforcement({ mode: "blocking", blockOnMustViolation: true, blockOnHighRisk: false }, base)
-    const db = initDb(oversightDir)
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord())
 
     const orig = process.cwd()
@@ -354,10 +354,10 @@ describe("enforce command logic (readEnforcement / writeEnforcement)", () => {
     }
   })
 
-  it("not blocked in advisory mode even with must violations", () => {
+  it("not blocked in advisory mode even with must violations", async () => {
     const oversightDir = path.join(base, ".oversight")
     writeEnforcement({ mode: "advisory", blockOnMustViolation: false, blockOnHighRisk: false }, base)
-    const db = initDb(oversightDir)
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord())
 
     const orig = process.cwd()
@@ -384,30 +384,30 @@ describe("search command logic (searchDecisions)", () => {
   })
   afterEach(() => { fs.rmSync(base, { recursive: true, force: true }) })
 
-  it("returns empty array when no decisions exist", () => {
-    const db = initDb(oversightDir)
+  it("returns empty array when no decisions exist", async () => {
+    const db = await initDb(oversightDir)
     const results = searchDecisions(db, { query: "rate limiting" })
     expect(results).toHaveLength(0)
   })
 
-  it("finds decisions by title keyword", () => {
-    const db = initDb(oversightDir)
+  it("finds decisions by title keyword", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord({ id: uuidv4(), title: "PCI compliance for payment data" }))
     insertDecision(db, makeRecord({ id: uuidv4(), title: "Redis rate limiting strategy" }))
     const results = searchDecisions(db, { query: "rate limiting" })
     expect(results.some((r) => r.title.toLowerCase().includes("rate"))).toBe(true)
   })
 
-  it("returns all decisions when no query is given", () => {
-    const db = initDb(oversightDir)
+  it("returns all decisions when no query is given", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord({ id: uuidv4() }))
     insertDecision(db, makeRecord({ id: uuidv4() }))
     const results = searchDecisions(db, {})
     expect(results.length).toBeGreaterThanOrEqual(2)
   })
 
-  it("filters by tag", () => {
-    const db = initDb(oversightDir)
+  it("filters by tag", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord({ id: uuidv4(), tags: ["pci", "security"] }))
     insertDecision(db, makeRecord({ id: uuidv4(), tags: ["performance"] }))
     const results = searchDecisions(db, { tags: ["pci"] })
@@ -415,8 +415,8 @@ describe("search command logic (searchDecisions)", () => {
     expect(results[0].tags).toContain("pci")
   })
 
-  it("filters by decision type", () => {
-    const db = initDb(oversightDir)
+  it("filters by decision type", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord({ id: uuidv4(), decisionType: "compliance" }))
     insertDecision(db, makeRecord({ id: uuidv4(), decisionType: "performance" }))
     const results = searchDecisions(db, { decisionTypes: ["compliance"] })
@@ -424,8 +424,8 @@ describe("search command logic (searchDecisions)", () => {
     expect(results[0].decisionType).toBe("compliance")
   })
 
-  it("filters by status", () => {
-    const db = initDb(oversightDir)
+  it("filters by status", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord({ id: uuidv4(), status: "active" }))
     insertDecision(db, makeRecord({ id: uuidv4(), status: "superseded" }))
     const results = searchDecisions(db, { status: "superseded" })
@@ -433,8 +433,8 @@ describe("search command logic (searchDecisions)", () => {
     expect(results[0].status).toBe("superseded")
   })
 
-  it("respects limit option", () => {
-    const db = initDb(oversightDir)
+  it("respects limit option", async () => {
+    const db = await initDb(oversightDir)
     for (let i = 0; i < 5; i++) {
       insertDecision(db, makeRecord({ id: uuidv4(), title: `Decision ${i}` }))
     }
@@ -442,8 +442,8 @@ describe("search command logic (searchDecisions)", () => {
     expect(results).toHaveLength(2)
   })
 
-  it("deduplicates results", () => {
-    const db = initDb(oversightDir)
+  it("deduplicates results", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord({ id: uuidv4(), title: "PCI security requirement" }))
     const results = searchDecisions(db, {})
     const ids = results.map((r) => r.id)
@@ -451,8 +451,8 @@ describe("search command logic (searchDecisions)", () => {
     expect(ids.length).toBe(uniqueIds.size)
   })
 
-  it("combined: query + tag filter", () => {
-    const db = initDb(oversightDir)
+  it("combined: query + tag filter", async () => {
+    const db = await initDb(oversightDir)
     insertDecision(db, makeRecord({ id: uuidv4(), title: "PCI compliance rule", tags: ["pci"] }))
     insertDecision(db, makeRecord({ id: uuidv4(), title: "PCI reporting rule", tags: ["reporting"] }))
     const results = searchDecisions(db, { query: "PCI", tags: ["pci"] })

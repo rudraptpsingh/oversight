@@ -3,6 +3,10 @@ export type Page =
   | { name: "decisions" }
   | { name: "decision-detail"; id: string }
   | { name: "constraints" }
+  | { name: "backlog" }
+  | { name: "confidence" }
+  | { name: "coverage" }
+  | { name: "regressions" }
 
 export type DecisionStatus = "active" | "superseded" | "deprecated" | "proposed" | "needs-review"
 

@@ -136,6 +136,62 @@ function rowToRecord(row: RawRow): OversightRecord {
 }
 
 
+/**
+ * Sync the materialized constraints table for a decision.
+ * Preserves existing confidence/check_count/override_count on update (additive only).
+ * Called after every insert or update.
+ */
+export function syncConstraintsTable(db: Database, decisionId: string, constraints: Constraint[]): void {
+  // Get existing rows to preserve confidence/check stats
+  const existing = db.prepare(
+    "SELECT id, description, severity, confidence, check_count, override_count, consistency_score, last_checked, precondition, invariant, recovery FROM constraints WHERE decision_id = ?"
+  ).all(decisionId) as Array<{
+    id: number; description: string; severity: string
+    confidence: number; check_count: number; override_count: number
+    consistency_score: number; last_checked: number | null
+    precondition: string | null; invariant: number; recovery: string | null
+  }>
+  const existingByDesc = new Map(existing.map(r => [r.description.toLowerCase().trim(), r]))
+
+  // Remove constraints no longer present
+  const currentDescriptions = new Set(constraints.map(c => c.description.toLowerCase().trim()))
+  for (const row of existing) {
+    if (!currentDescriptions.has(row.description.toLowerCase().trim())) {
+      db.prepare("DELETE FROM constraints WHERE id = ?").run(row.id)
+    }
+  }
+
+  // Insert or update
+  for (const c of constraints) {
+    const key = c.description.toLowerCase().trim()
+    const prev = existingByDesc.get(key)
+    if (prev) {
+      // Update severity/rationale/precondition/invariant/recovery — preserve confidence stats
+      db.prepare(`
+        UPDATE constraints SET severity = ?, rationale = ?, precondition = ?, invariant = ?, recovery = ?
+        WHERE id = ?
+      `).run(c.severity, c.rationale, (c as ExtendedConstraint).precondition ?? null,
+             (c as ExtendedConstraint).invariant ? 1 : 0,
+             (c as ExtendedConstraint).recovery ?? null, prev.id)
+    } else {
+      db.prepare(`
+        INSERT INTO constraints (decision_id, description, severity, rationale, confidence, check_count,
+          override_count, consistency_score, last_checked, precondition, invariant, recovery)
+        VALUES (?, ?, ?, ?, 0.5, 0, 0, 0.5, NULL, ?, ?, ?)
+      `).run(decisionId, c.description, c.severity, c.rationale,
+             (c as ExtendedConstraint).precondition ?? null,
+             (c as ExtendedConstraint).invariant ? 1 : 0,
+             (c as ExtendedConstraint).recovery ?? null)
+    }
+  }
+}
+
+interface ExtendedConstraint extends Constraint {
+  precondition?: string
+  invariant?: boolean
+  recovery?: string
+}
+
 export function insertDecision(db: Database, record: OversightRecord): void {
   const constraints = deduplicateConstraints(record.constraints ?? [])
   db.prepare(`
@@ -177,6 +233,7 @@ export function insertDecision(db: Database, record: OversightRecord): void {
     review_triggers_json: JSON.stringify(record.reviewTriggers),
     source_json: record.source ? JSON.stringify(record.source) : null,
   })
+  syncConstraintsTable(db, record.id, constraints)
 }
 
 export function getDecisionById(db: Database, id: string): OversightRecord | null {
@@ -196,7 +253,7 @@ export function getDecisionsByPath(db: Database, filePath: string): OversightRec
           const pattern = anchor.glob ?? anchor.path
           return matchesGlob(pattern, normalizedPath)
         }
-        const anchorPath = anchor.path.replace(/^\.\//, "").replace(/\\/g, "/")
+        const anchorPath = anchor.path.replace(/^\.\//, "").replace(/\\/g, "/").replace(/\/$/, "")
         return (
           anchorPath === normalizedPath ||
           normalizedPath.startsWith(anchorPath + "/") ||
@@ -264,10 +321,12 @@ export function updateDecision(
     source_json: merged.source ? JSON.stringify(merged.source) : null,
   })
 
+  syncConstraintsTable(db, merged.id, merged.constraints ?? [])
   return merged
 }
 
 export function deleteDecision(db: Database, id: string): boolean {
+  db.prepare("DELETE FROM constraints WHERE decision_id = ?").run(id)
   const result = db.prepare("DELETE FROM decisions WHERE id = ?").run(id)
   return result.changes > 0
 }

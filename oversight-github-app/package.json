@@ -1,0 +1,24 @@
+{
+  "name": "oversight-github-app",
+  "version": "0.1.0",
+  "description": "GitHub App for Oversight — constraint enforcement on pull requests",
+  "type": "module",
+  "main": "dist/app.js",
+  "scripts": {
+    "build": "tsc",
+    "build:check": "tsc --noEmit",
+    "start": "node dist/app.js",
+    "dev": "tsx watch src/app.ts"
+  },
+  "dependencies": {
+    "probot": "^13.0.0",
+    "better-sqlite3": "^9.0.0",
+    "smee-client": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

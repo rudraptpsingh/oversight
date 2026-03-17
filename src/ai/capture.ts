@@ -2,6 +2,9 @@ import Anthropic from "@anthropic-ai/sdk"
 import { v4 as uuidv4 } from "uuid"
 import type { OversightRecord, ConversationSource } from "../types/index.js"
 
+// Model selection: must be claude-sonnet-4-5 or newer. Never Haiku — per seed-ai-capture-model.
+// Override via OVERSIGHT_AI_MODEL env var if needed.
+const AI_MODEL = process.env.OVERSIGHT_AI_MODEL ?? "claude-sonnet-4-5-20251001"
 const client = new Anthropic()
 
 const SYSTEM_PROMPT = `You are a software architecture expert helping developers document code decisions.

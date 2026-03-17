@@ -25,6 +25,9 @@ export interface Constraint {
   description: string
   severity: ConstraintSeverity
   rationale: string
+  precondition?: string   // P: when does this constraint apply?
+  invariant?: boolean     // I: true = must hold for entire session
+  recovery?: string       // R: what to do if violated
 }
 
 export interface Alternative {
@@ -109,6 +112,8 @@ export interface StalenessResult {
   suggestedAction: string
 }
 
+export type EnforcementOutcome = "blocked" | "redirected" | "warning" | "allowed"
+
 export interface CheckChangeResult {
   relevantDecisions: OversightRecord[] | SlimDecision[]
   mustConstraints: Constraint[] | SlimConstraint[]
@@ -117,6 +122,9 @@ export interface CheckChangeResult {
   proceed: boolean
   blocked: boolean
   blockReason?: string
+  enforcement: EnforcementOutcome
+  redirect_hint?: string
+  pre_violation_warning?: string
 }
 
 export interface OversightSession {

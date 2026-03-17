@@ -32,13 +32,20 @@ export function registerEnforce(program: Command): void {
     .command("staged")
     .description("Check staged files against constraints. Exits 1 if blocked (use in pre-commit).")
     .option("--dry-run", "Print warnings but exit 0 even when blocked (for CI preview)")
-    .action(async (opts: { dryRun?: boolean }) => {
+    .option("--json", "Output structured JSON result to stdout (for CI pipelines)")
+    .action(async (opts: { dryRun?: boolean; json?: boolean }) => {
       const cwd = process.cwd()
       const oversightDir = getOversightDir(cwd)
       const db = await getDb(oversightDir)
 
       const staged = getStagedFiles(cwd)
       if (staged.length === 0) {
+        if (opts.json) {
+          process.stdout.write(JSON.stringify({
+            would_block: false, violations: [], warnings: [],
+            risk_level: "low", enforcement: "allowed", coverage_score: null, staged_files: [],
+          }, null, 2) + "\n")
+        }
         process.exit(0)
       }
 
@@ -47,8 +54,47 @@ export function registerEnforce(program: Command): void {
         affectedPaths: staged,
       })
 
+      // Read current coverage score from session-report if available
+      let coverage_score: number | null = null
+      try {
+        const reportPath = path.join(oversightDir, "session-report.json")
+        if (fs.existsSync(reportPath)) {
+          const report = JSON.parse(fs.readFileSync(reportPath, "utf-8")) as { summary?: { coverage_score?: number } }
+          coverage_score = report.summary?.coverage_score ?? null
+        }
+      } catch { /* best-effort */ }
+
+      if (opts.json) {
+        const violations = result.mustConstraints.map((c) => ({
+          constraint: "description" in c ? c.description : String(c),
+          severity: "severity" in c ? c.severity : "must",
+          files: staged,
+        }))
+        const output = {
+          would_block: result.blocked,
+          violations,
+          warnings: result.warnings,
+          risk_level: result.riskLevel,
+          enforcement: result.enforcement,
+          redirect_hint: result.redirect_hint ?? null,
+          pre_violation_warning: result.pre_violation_warning ?? null,
+          coverage_score,
+          staged_files: staged,
+        }
+        process.stdout.write(JSON.stringify(output, null, 2) + "\n")
+        process.exit(result.blocked && !opts.dryRun ? 1 : 0)
+      }
+
       for (const w of result.warnings) {
         console.log(`  ⚠ ${w}`)
+      }
+
+      if (result.redirect_hint) {
+        console.log(`  → ${result.redirect_hint}`)
+      }
+
+      if (result.pre_violation_warning) {
+        console.log(`  ⚡ ${result.pre_violation_warning}`)
       }
 
       if (result.blocked && !opts.dryRun) {

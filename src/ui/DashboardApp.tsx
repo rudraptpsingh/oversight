@@ -5,6 +5,10 @@ import OverviewPage from "./pages/OverviewPage"
 import DecisionsPage from "./pages/DecisionsPage"
 import DecisionDetailPage from "./pages/DecisionDetailPage"
 import ConstraintsPage from "./pages/ConstraintsPage"
+import BacklogPage from "./pages/BacklogPage"
+import ConfidencePage from "./pages/ConfidencePage"
+import CoveragePage from "./pages/CoveragePage"
+import RegressionsPage from "./pages/RegressionsPage"
 import styles from "./DashboardApp.module.css"
 
 export default function DashboardApp() {
@@ -23,6 +27,10 @@ export default function DashboardApp() {
           <DecisionDetailPage id={page.id} onNavigate={setPage} />
         )}
         {page.name === "constraints" && <ConstraintsPage onNavigate={setPage} />}
+        {page.name === "backlog" && <BacklogPage onNavigate={setPage} />}
+        {page.name === "confidence" && <ConfidencePage onNavigate={setPage} />}
+        {page.name === "coverage" && <CoveragePage onNavigate={setPage} />}
+        {page.name === "regressions" && <RegressionsPage onNavigate={setPage} />}
       </main>
     </div>
   )

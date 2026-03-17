@@ -1,5 +1,5 @@
 import { createServer, IncomingMessage, ServerResponse } from "node:http"
-import { readFileSync, existsSync } from "node:fs"
+import { readFileSync, writeFileSync, existsSync } from "node:fs"
 import { join, extname } from "node:path"
 import { createRequire } from "node:module"
 import { fileURLToPath } from "node:url"
@@ -8,7 +8,7 @@ import type { Database } from "../db/schema.js"
 import { getAllDecisions, getDecisionById, updateDecision, deleteDecision } from "../db/decisions.js"
 import { searchDecisions } from "../db/search.js"
 import { computeMetrics } from "../db/metrics.js"
-import { getOversightDir } from "../utils/config.js"
+import { getOversightDir, findOversightDir } from "../utils/config.js"
 import type { SearchOptions, DecisionStatus, DecisionType } from "../types/index.js"
 
 const require = createRequire(import.meta.url)
@@ -183,6 +183,130 @@ export async function createDashboardServer(port = 7654, startDir?: string): Pro
         const q = url.searchParams.get("q") ?? ""
         const limit = parseInt(url.searchParams.get("limit") ?? "20", 10)
         json(res, searchDecisions(db, { query: q, limit }))
+        return
+      }
+
+      if (pathname === "/api/session-report" && method === "GET") {
+        const oversightDir = findOversightDir(startDir ?? process.cwd())
+        if (!oversightDir) {
+          json(res, { found: false })
+          return
+        }
+        const reportPath = join(oversightDir, "session-report.json")
+        if (!existsSync(reportPath)) {
+          json(res, { found: false })
+          return
+        }
+        try {
+          const content = readFileSync(reportPath, "utf-8")
+          json(res, JSON.parse(content))
+        } catch {
+          json(res, { found: false })
+        }
+        return
+      }
+
+      if (pathname === "/api/backlog" && method === "GET") {
+        const oversightDir = findOversightDir(startDir ?? process.cwd())
+        if (!oversightDir) {
+          json(res, [])
+          return
+        }
+        const reportPath = join(oversightDir, "session-report.json")
+        if (!existsSync(reportPath)) {
+          json(res, [])
+          return
+        }
+        try {
+          const content = readFileSync(reportPath, "utf-8")
+          const report = JSON.parse(content)
+          json(res, report.backlog ?? [])
+        } catch {
+          json(res, [])
+        }
+        return
+      }
+
+      if (pathname.match(/^\/api\/backlog\/(.+)\/resolve$/) && method === "POST") {
+        const idMatch = pathname.match(/^\/api\/backlog\/(.+)\/resolve$/)
+        const id = idMatch ? decodeURIComponent(idMatch[1]) : null
+        if (!id) {
+          json(res, { error: "Invalid id" }, 400)
+          return
+        }
+        const oversightDir = findOversightDir(startDir ?? process.cwd())
+        if (!oversightDir) {
+          json(res, { ok: false })
+          return
+        }
+        const reportPath = join(oversightDir, "session-report.json")
+        if (existsSync(reportPath)) {
+          try {
+            const content = readFileSync(reportPath, "utf-8")
+            const report = JSON.parse(content)
+            if (Array.isArray(report.backlog)) {
+              report.backlog = report.backlog.filter((item: { id: string }) => item.id !== id)
+              writeFileSync(reportPath, JSON.stringify(report, null, 2), "utf-8")
+            }
+          } catch {
+            // ignore
+          }
+        }
+        json(res, { ok: true })
+        return
+      }
+
+      if (pathname === "/api/coverage" && method === "GET") {
+        const oversightDir = findOversightDir(startDir ?? process.cwd())
+        if (!oversightDir) {
+          json(res, { coverage_score: 0, coverage_gaps: [], total_decisions: 0, avg_confidence: 0, drift_bound: null, outcome_driven_violations: 0 })
+          return
+        }
+        const reportPath = join(oversightDir, "session-report.json")
+        if (!existsSync(reportPath)) {
+          json(res, { coverage_score: 0, coverage_gaps: [], total_decisions: 0, avg_confidence: 0, drift_bound: null, outcome_driven_violations: 0 })
+          return
+        }
+        try {
+          const content = readFileSync(reportPath, "utf-8")
+          const report = JSON.parse(content)
+          json(res, {
+            coverage_score: report.coverage_score ?? 0,
+            coverage_gaps: report.coverage_gaps ?? [],
+            total_decisions: report.total_decisions ?? 0,
+            avg_confidence: report.summary?.avg_confidence ?? 0,
+            drift_bound: report.drift_bound ?? null,
+            outcome_driven_violations: report.outcome_driven_violations ?? 0,
+          })
+        } catch {
+          json(res, { coverage_score: 0, coverage_gaps: [], total_decisions: 0, avg_confidence: 0, drift_bound: null, outcome_driven_violations: 0 })
+        }
+        return
+      }
+
+      if (pathname === "/api/regressions" && method === "GET") {
+        const rows = db.prepare(
+          "SELECT id, test_name, commit_sha, decision_id, created_at FROM regression_links WHERE resolved=0 ORDER BY created_at DESC"
+        ).all() as Array<{ id: number; test_name: string; commit_sha: string; decision_id: string | null; created_at: number }>
+        json(res, rows.map((r) => ({
+          id: r.id,
+          testName: r.test_name,
+          commitSha: r.commit_sha,
+          decisionId: r.decision_id,
+          createdAt: r.created_at,
+        })))
+        return
+      }
+
+      if (pathname.match(/^\/api\/regressions\/(\d+)\/resolve$/) && method === "POST") {
+        const idMatch = pathname.match(/^\/api\/regressions\/(\d+)\/resolve$/)
+        const id = idMatch ? parseInt(idMatch[1], 10) : null
+        if (!id) {
+          json(res, { error: "Invalid id" }, 400)
+          return
+        }
+        db.prepare("UPDATE regression_links SET resolved=1 WHERE id=?").run(id)
+        json(res, { ok: true })
         return
       }
 

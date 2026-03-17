@@ -38,6 +38,30 @@ export default function Sidebar({ currentPage, onNavigate }: Props) {
           active={currentPage === "constraints"}
           onClick={() => onNavigate({ name: "constraints" })}
         />
+        <NavItem
+          label="Backlog"
+          icon={<TaskIcon />}
+          active={currentPage === "backlog"}
+          onClick={() => onNavigate({ name: "backlog" })}
+        />
+        <NavItem
+          label="Confidence"
+          icon={<GaugeIcon />}
+          active={currentPage === "confidence"}
+          onClick={() => onNavigate({ name: "confidence" })}
+        />
+        <NavItem
+          label="Coverage"
+          icon={<TargetIcon />}
+          active={currentPage === "coverage"}
+          onClick={() => onNavigate({ name: "coverage" })}
+        />
+        <NavItem
+          label="Regressions"
+          icon={<BugIcon />}
+          active={currentPage === "regressions"}
+          onClick={() => onNavigate({ name: "regressions" })}
+        />
       </div>
 
       <div className={styles.footer}>
@@ -123,6 +147,38 @@ function NpmIcon() {
     <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
       <path d="M0 0v16h16V0zm14.5 14.5h-13V1.5h13z"/>
       <path d="M3 3.5h10v7H8V6H6v4.5H3z"/>
+    </svg>
+  )
+}
+
+function TaskIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path fillRule="evenodd" d="M2 2.5A2.5 2.5 0 0 1 4.5 0h7A2.5 2.5 0 0 1 14 2.5v11a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 2 13.5v-11zm2.5-1a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1v-11a1 1 0 0 0-1-1h-7zM4.5 5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5z"/>
+    </svg>
+  )
+}
+
+function GaugeIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-3.5a.5.5 0 0 1 .5.5v3.793l2.354 2.353a.5.5 0 0 1-.708.708L7.5 9.207V5a.5.5 0 0 1 .5-.5z"/>
+    </svg>
+  )
+}
+
+function TargetIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 1.5a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13zM8 4a4 4 0 1 0 0 8A4 4 0 0 0 8 4zm0 1.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM8 7a1 1 0 1 0 0 2A1 1 0 0 0 8 7z"/>
+    </svg>
+  )
+}
+
+function BugIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A4.979 4.979 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A4.985 4.985 0 0 1 13 6h.5a.5.5 0 0 0 .5-.5V5a.5.5 0 0 1 1 0v.5A1.5 1.5 0 0 1 13.5 7H13v1h1.5a.5.5 0 0 1 0 1H13v1a3 3 0 0 1-.44 1.563C13.28 11.546 14 12.946 14 14.5a.5.5 0 0 1-1 0c0-1.18-.59-2.228-1.537-2.95C10.855 12.418 9.5 13 8 13s-2.855-.582-3.463-1.45C3.59 12.272 3 13.32 3 14.5a.5.5 0 0 1-1 0c0-1.554.72-2.954 1.44-3.937A3 3 0 0 1 3 9V8H1.5a.5.5 0 0 1 0-1H3V6H2.5A1.5 1.5 0 0 1 1 4.5V4a.5.5 0 0 1 1 0v.5a.5.5 0 0 0 .5.5H3a4.985 4.985 0 0 1 1.372-3.978l-.41-1.352a.5.5 0 0 1 .393-.648z"/>
     </svg>
   )
 }

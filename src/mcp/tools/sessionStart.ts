@@ -1,10 +1,14 @@
+import fs from "fs"
+import path from "path"
 import type { Database } from "../../db/adapter.js"
 import { v4 as uuidv4 } from "uuid"
 import { insertSession, getActiveSession } from "../../db/sessions.js"
 import { getAllDecisions } from "../../db/decisions.js"
 import { retrieveConstraintsByQuery } from "../../db/retrieval.js"
+import { findOversightDir } from "../../utils/config.js"
 import type { OversightSession } from "../../types/index.js"
 
+/** BM25 retrieval cap for session_start — topK ≤ 20 per seed-bm25-coefficients. Never return all constraints. */
 const SESSION_TOP_K = 20
 
 export const sessionStartTool = {
@@ -22,6 +26,29 @@ export const sessionStartTool = {
   },
 }
 
+interface SessionReportSummary {
+  decision_quality_avg: number
+  coverage_score: number
+  avg_confidence: number
+  total_decisions: number
+  total_constraints: number
+  drift_bound: number | null
+  outcome_driven_violations: number
+}
+
+function loadReportSummary(): SessionReportSummary | null {
+  try {
+    const dir = findOversightDir()
+    if (!dir) return null
+    const reportPath = path.join(dir, "session-report.json")
+    if (!fs.existsSync(reportPath)) return null
+    const raw = JSON.parse(fs.readFileSync(reportPath, "utf-8")) as { summary?: SessionReportSummary }
+    return raw.summary ?? null
+  } catch {
+    return null
+  }
+}
+
 export function handleSessionStart(
   db: Database,
   input: { agentId?: string; taskDescription: string; topK?: number }
@@ -31,6 +58,7 @@ export function handleSessionStart(
   activeConstraints: Array<{ decisionTitle: string; constraints: Array<{ severity: string; description: string }> }>
   doNotChangePatterns: string[]
   totalDecisions: number
+  reportSummary: SessionReportSummary | null
 } {
   const existing = getActiveSession(db)
   if (existing) {
@@ -84,6 +112,7 @@ export function handleSessionStart(
     .filter((ac) => ac.constraints.length > 0)
 
   const doNotChangePatterns = [...new Set(retrieved.flatMap((r) => r.record.doNotChange))]
+  const reportSummary = loadReportSummary()
 
   return {
     sessionId,
@@ -91,5 +120,6 @@ export function handleSessionStart(
     activeConstraints,
     doNotChangePatterns,
     totalDecisions: allDecisions.length,
+    reportSummary,
   }
 }
