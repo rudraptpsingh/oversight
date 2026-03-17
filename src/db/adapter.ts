@@ -20,6 +20,7 @@ export interface Statement {
 export interface Database {
   prepare(sql: string): Statement
   exec(sql: string): void
+  /** Set PRAGMA values. WAL mode is set via pragma("journal_mode=WAL") on open. */
   pragma(str: string): void
   close(): void
 }

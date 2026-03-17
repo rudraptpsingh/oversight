@@ -5,7 +5,8 @@ const HISTORY_EVENT_OVERRIDE = "override"
 const HISTORY_EVENT_PROMOTE = "promote"
 const HISTORY_EVENT_DOWNGRADE = "downgrade"
 
-const CONSISTENCY_WINDOW = 8  // pass^8 rate per Π-Bench
+/** Rolling window for pass^N consistency score per Π-Bench (τ-Bench paper). Must stay at 8. */
+const CONSISTENCY_WINDOW = 8
 
 /**
  * Called after a constraint passes check_change without violation.

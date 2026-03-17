@@ -2,6 +2,10 @@ import fs from "fs"
 import path from "path"
 import type { OversightConfig, EnforcementConfig } from "../types/index.js"
 
+/**
+ * Walk up the directory tree from startDir looking for .oversight/config.json.
+ * Always repo-relative — never resolves to a global/home path.
+ */
 export function findOversightDir(startDir: string = process.cwd()): string | null {
   let current = startDir
   while (true) {

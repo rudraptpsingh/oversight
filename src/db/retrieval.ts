@@ -3,10 +3,12 @@ import { getDecisionsByPath } from "./decisions.js"
 import { getAllDecisions } from "./decisions.js"
 import type { OversightRecord, SlimDecision, SlimConstraint } from "../types/index.js"
 
-/** Default BM25 k1 (term frequency saturation). */
+/** Default BM25 k1 (term frequency saturation). Must stay at 1.5 per seed-bm25-coefficients. */
 const BM25_K1 = 1.5
-/** Default BM25 b (length normalization). */
+/** Default BM25 b (length normalization). Must stay at 0.75 per seed-bm25-coefficients. */
 const BM25_B = 0.75
+/** Maximum constraints returned by BM25 search. Capped at 10 to prevent token inflation. */
+const BM25_TOP_K_MAX = 10
 
 /**
  * Tokenize text for BM25: lowercase, split on non-alphanumeric, filter short tokens.
