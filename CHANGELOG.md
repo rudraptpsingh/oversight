@@ -7,6 +7,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.1.3] — 2026-03-18
+
+### Fixed
+- Fixed 86 failing tests caused by missing `await` on async `initDb()` calls across 7 test files
+
+---
+
 ## [0.1.2] — 2026-03-17
 
 ### Fixed
@@ -66,6 +73,7 @@ Initial public release. Rebranded from WhyCode to Oversight (npm package `oversi
 - Dependabot for npm and GitHub Actions
 - MIT license
 
+[0.1.3]: https://github.com/rudraptpsingh/oversight/releases/tag/v0.1.3
 [0.1.2]: https://github.com/rudraptpsingh/oversight/releases/tag/v0.1.2
 [0.1.1]: https://github.com/rudraptpsingh/oversight/releases/tag/v0.1.1
 [0.1.0]: https://github.com/rudraptpsingh/oversight/releases/tag/v0.1.0
