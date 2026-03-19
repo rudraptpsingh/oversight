@@ -250,10 +250,13 @@ export function getDecisionsByPath(db: Database, filePath: string): OversightRec
     .filter((record) =>
       record.anchors.some((anchor) => {
         if (anchor.type === "glob") {
-          const pattern = anchor.glob ?? anchor.path
+          const pattern = anchor.glob ?? anchor.path ?? (anchor as unknown as Record<string, unknown>).file as string | undefined
+          if (!pattern) return false
           return matchesGlob(pattern, normalizedPath)
         }
-        const anchorPath = anchor.path.replace(/^\.\//, "").replace(/\\/g, "/").replace(/\/$/, "")
+        const rawPath = anchor.path ?? (anchor as unknown as Record<string, unknown>).file as string | undefined
+        if (!rawPath) return false
+        const anchorPath = rawPath.replace(/^\.\//, "").replace(/\\/g, "/").replace(/\/$/, "")
         return (
           anchorPath === normalizedPath ||
           normalizedPath.startsWith(anchorPath + "/") ||

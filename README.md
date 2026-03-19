@@ -122,6 +122,7 @@ Run `npx oversight dashboard` to open a local web interface at **http://localhos
 - Metrics: coverage heatmap, constraint density, agent check history
 - Search and filter by type, status, tag, or file path
 - Timeline of decisions and recent agent checks
+- **Live auto-refresh** — all pages poll every 30 seconds so metrics stay current without a manual reload
 
 ---
 
@@ -170,8 +171,8 @@ oversight dashboard         Open visual dashboard at http://localhost:7654
   "doNotChange": ["rateLimiter\\.redisClient"],
   "agentHints": [
     {
-      "instruction": "If you see in-memory rate limiting, replace with Redis INCR — do not optimize away the Redis call",
-      "scope": "file"
+      "trigger": "refactoring rate limiting or caching layer",
+      "hint": "Replace in-memory counters with Redis INCR + TTL — never optimize away the Redis call. In-memory counters are per-instance and bypass rate limits across pods."
     }
   ]
 }

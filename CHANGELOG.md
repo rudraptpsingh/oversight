@@ -7,6 +7,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.1.4] — 2026-03-19
+
+### Added
+- **Dashboard auto-refresh** — all dashboard pages (Overview, Decisions, Coverage, Backlog, Confidence, Constraints, Regressions) now poll every 30 seconds so metrics stay live without a manual reload
+- **`agentHints` trigger+hint format** — decision records now use `{ trigger, hint }` shape for agent hints, making them more actionable for agents scanning for relevant context
+
+### Fixed
+- **`oversight_get_by_path` crash on MCP-recorded decisions** — `getDecisionsByPath` crashed with "Cannot read properties of undefined (reading 'replace')" when anchors used the `{ file, line }` format written by `oversight_record`. Now falls back to `anchor.file` when `anchor.path` is undefined
+- **`oversight check` CLI crash** — same anchor path fix applied to the `check` command's file-matching logic
+- **Glob branch null guard** — glob anchor matching now guards against undefined `pattern` before calling `matchesGlob`
+
+---
+
 ## [0.1.3] — 2026-03-18
 
 ### Fixed
