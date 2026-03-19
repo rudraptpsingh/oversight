@@ -144,13 +144,16 @@ async function main(): Promise<void> {
     const nf = f.replace(/^\.\//, "").replace(/\\/g, "/")
     const covered = allDecisions.some(d => d.anchors.some(a => {
       if (a.type === "glob") {
-        const pattern = (a.glob ?? a.path)
+        const pattern = (a.glob ?? a.path ?? a.file)
           .replace(/[.+^${}()|[\]\\]/g, "\\$&")
           .replace(/\*\*/g, "\u0000").replace(/\*/g, "[^/]*")
           .replace(/\u0000/g, ".*").replace(/\?/g, "[^/]")
         return new RegExp(`^${pattern}$`).test(nf)
       }
-      const ap = a.path.replace(/^\.\//, "").replace(/\\/g, "/").replace(/\/$/, "")
+      // Support both anchor formats: {type, path} from capture CLI and {file, line} from MCP
+      const rawPath = a.path ?? a.file
+      if (!rawPath) return false
+      const ap = rawPath.replace(/^\.\//, "").replace(/\\/g, "/").replace(/\/$/, "")
       return ap === nf || nf.startsWith(ap + "/") || ap.startsWith(nf + "/")
     }))
     if (covered) coveredFiles.add(nf)

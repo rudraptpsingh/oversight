@@ -72,11 +72,12 @@ function serveStatic(res: ServerResponse, filePath: string): boolean {
 
 export async function createDashboardServer(port = 7654, startDir?: string): Promise<{ start: () => Promise<void>; stop: () => void }> {
   const distDir = join(__dirname, "../../dashboard-ui/dist")
-  let db: Database
+  let oversightDir: string
 
   try {
-    const oversightDir = getOversightDir(startDir ?? process.cwd())
-    db = await getDb(oversightDir)
+    oversightDir = getOversightDir(startDir ?? process.cwd())
+    // Validate on startup — will throw if not initialized
+    await getDb(oversightDir)
   } catch {
     throw new Error("Oversight is not initialized in this directory. Run `oversight init` first.")
   }
@@ -93,6 +94,9 @@ export async function createDashboardServer(port = 7654, startDir?: string): Pro
     }
 
     if (pathname.startsWith("/api/")) {
+      // Re-open db on every request so the dashboard always reflects the latest
+      // state written by MCP or CLI (sql.js loads db file into memory on open)
+      const db = await getDb(oversightDir)
       await handleApi(req, res, url, db)
       return
     }
@@ -271,12 +275,12 @@ export async function createDashboardServer(port = 7654, startDir?: string): Pro
           const content = readFileSync(reportPath, "utf-8")
           const report = JSON.parse(content)
           json(res, {
-            coverage_score: report.coverage_score ?? 0,
+            coverage_score: report.coverage_score ?? report.summary?.coverage_score ?? 0,
             coverage_gaps: report.coverage_gaps ?? [],
-            total_decisions: report.total_decisions ?? 0,
+            total_decisions: report.total_decisions ?? report.summary?.total_decisions ?? 0,
             avg_confidence: report.summary?.avg_confidence ?? 0,
-            drift_bound: report.drift_bound ?? null,
-            outcome_driven_violations: report.outcome_driven_violations ?? 0,
+            drift_bound: report.drift_bound ?? report.summary?.drift_bound ?? null,
+            outcome_driven_violations: report.outcome_driven_violations ?? report.summary?.outcome_driven_violations ?? 0,
           })
         } catch {
           json(res, { coverage_score: 0, coverage_gaps: [], total_decisions: 0, avg_confidence: 0, drift_bound: null, outcome_driven_violations: 0 })

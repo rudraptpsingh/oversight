@@ -15,21 +15,29 @@ export default function OverviewPage({ onNavigate }: Props) {
   const [recent, setRecent] = useState<OversightRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   useEffect(() => {
-    Promise.all([fetchMetrics(), fetchDecisions({ limit: 5 })])
-      .then(([m, decisions]) => {
-        setMetrics(m)
-        const sorted = [...decisions].sort(
-          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        )
-        setRecent(sorted.slice(0, 5))
-        setLoading(false)
-      })
-      .catch((e: Error) => {
-        setError(e.message)
-        setLoading(false)
-      })
+    function doFetch() {
+      Promise.all([fetchMetrics(), fetchDecisions({ limit: 5 })])
+        .then(([m, decisions]) => {
+          setMetrics(m)
+          const sorted = [...decisions].sort(
+            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          )
+          setRecent(sorted.slice(0, 5))
+          setLoading(false)
+          setError(null)
+          setLastUpdated(new Date())
+        })
+        .catch((e: Error) => {
+          setError(e.message)
+          setLoading(false)
+        })
+    }
+    doFetch()
+    const timer = setInterval(doFetch, 30_000)
+    return () => clearInterval(timer)
   }, [])
 
   if (loading) return <LoadingState />
@@ -43,7 +51,14 @@ export default function OverviewPage({ onNavigate }: Props) {
     <div className={styles.page}>
       <div className={styles.header}>
         <h1 className={styles.title}>Overview</h1>
-        <p className={styles.subtitle}>Decision coverage and agent safety metrics for this repository</p>
+        <p className={styles.subtitle}>
+          Decision coverage and agent safety metrics for this repository
+          {lastUpdated && (
+            <span style={{ opacity: 0.5, marginLeft: "0.75rem", fontSize: "0.75rem" }}>
+              · updated {lastUpdated.toLocaleTimeString()}
+            </span>
+          )}
+        </p>
       </div>
 
       <div className={styles.statsGrid}>

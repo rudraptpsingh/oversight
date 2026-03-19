@@ -39,13 +39,18 @@ export default function ConfidencePage({ onNavigate }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchSessionReport()
-      .then((data) => {
-        setReport(data as SessionReport)
-        setError(null)
-      })
-      .catch((e: unknown) => setError(String(e)))
-      .finally(() => setLoading(false))
+    function doFetch() {
+      fetchSessionReport()
+        .then((data) => {
+          setReport(data as SessionReport)
+          setError(null)
+        })
+        .catch((e: unknown) => setError(String(e)))
+        .finally(() => setLoading(false))
+    }
+    doFetch()
+    const timer = setInterval(doFetch, 30_000)
+    return () => clearInterval(timer)
   }, [])
 
   if (loading) {

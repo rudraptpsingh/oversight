@@ -193,23 +193,36 @@ oversight dashboard         Open visual dashboard at http://localhost:7654
 
 ---
 
-## Benchmark: Next.js Image Optimization
+## Benchmarks
 
-This benchmark is fully reproducible. Clone the repo and run it:
+### Agent A/B: Auth + Rate Limiting (Scenario B3)
 
-```bash
-npm run build
-npx tsx benchmarks/nextjs-benchmark.ts
-```
+The latest benchmark compares two agents building an Express API with JWT auth and Redis rate limiting:
 
-**Setup:** Two simulated agents optimize a Next.js image pipeline. Three real production constraints are pre-loaded into Oversight (based on actual CVE and incident patterns).
+- **Agent A** — no Oversight, standard tools only
+- **Agent B** — Oversight enabled; must call `oversight_get_by_path` before touching auth/rate-limit files
 
-- **Agent A** (no Oversight): Proceeds without consulting decision history
-- **Agent B** (with Oversight): Queries `oversight_check_change` first
+**Result (2 runs, Scenario B3):**
 
-**Result:** Agent A introduces an SSRF vulnerability and an OOM risk. Agent B avoids both while still making three valid optimizations.
+| Metric | Without Oversight | With Oversight |
+|--------|-------------------|----------------|
+| Mean violations | 9.0 ± 0.0 | 4.0 ± 0.0 |
+| Cost at risk | $1.0M | $305k |
+| Improvement | — | **56% fewer violations** |
 
-See [benchmarks/README.md](./benchmarks/README.md) for methodology and the full SWE-bench integration plan.
+Violations are mapped to real incident costs (auth/rate constraints from `swe-bench-eval`). Full numbers live in the latest report under `benchmarks/agent-ab-test/results/`.
+
+### Token efficiency: BM25 + slim responses
+
+Oversight also benchmarks retrieval overhead. For a project with ~50 decisions anchored to a few paths:
+
+| Approach | Records | Est. tokens |
+|----------|---------|-------------|
+| Path-only (all matches) | 22 | ~3746 |
+| BM25 + path + topK=10 | 10 | ~1667 |
+| + slim format (`slim=true`) | 10 | ~380 |
+
+**Takeaway:** Using BM25 + path filter + `slim=true` cuts constraint context by ~90% vs returning every path-matched decision with full fields.
 
 ---
 

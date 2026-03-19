@@ -148,7 +148,16 @@ export function handleRecord(
     id: uuidv4(),
     version: 1,
     status: "active",
-    anchors: input.anchors ?? [],
+    anchors: (input.anchors ?? []).map((a) => {
+      // Normalize MCP-provided {file, line} anchors to canonical {type, path} format
+      const raw = a as unknown as Record<string, unknown>
+      if (!raw.type && raw.file) {
+        const anchor: CodeAnchor = { type: "file", path: raw.file as string }
+        if (raw.line != null) anchor.lineRange = [raw.line as number, raw.line as number]
+        return anchor
+      }
+      return a
+    }),
     title: input.title,
     summary: input.summary,
     context: input.context,

@@ -14,13 +14,18 @@ export default function CoveragePage({ onNavigate }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchCoverage()
-      .then((data) => {
-        setCoverage(data)
-        setError(null)
-      })
-      .catch((e: unknown) => setError(String(e)))
-      .finally(() => setLoading(false))
+    function doFetch() {
+      fetchCoverage()
+        .then((data) => {
+          setCoverage(data)
+          setError(null)
+        })
+        .catch((e: unknown) => setError(String(e)))
+        .finally(() => setLoading(false))
+    }
+    doFetch()
+    const timer = setInterval(doFetch, 30_000)
+    return () => clearInterval(timer)
   }, [])
 
   if (loading) {

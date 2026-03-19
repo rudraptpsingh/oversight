@@ -61,6 +61,13 @@ export default function DecisionsPage({ onNavigate }: Props) {
     return () => clearTimeout(timer)
   }, [load, search])
 
+  // Auto-refresh every 30s when no search is active
+  useEffect(() => {
+    if (search) return
+    const timer = setInterval(() => load(), 30_000)
+    return () => clearInterval(timer)
+  }, [load, search])
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>

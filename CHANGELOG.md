@@ -16,11 +16,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [0.1.2] — 2026-03-17
 
-### Fixed
-- Removed circular self-dependency (`oversight` listed as its own dependency)
+### Added
+- **BM25 + path filter retrieval** — `retrieveConstraintsForEdit` and `oversight_retrieve_constraints` use BM25 ranking for relevance; path filter keeps only decisions whose anchors match edited paths
+- **Slim response format** — `slim=true` on `get_by_path`, `check_change`, `retrieve_constraints` returns minimal format (title, constraints, doNotChange) — ~80% token reduction
+- **Session BM25** — `oversight_session_start` ranks constraints by `taskDescription` via BM25; `topK` (default 20) limits results
+- **Constraint deduplication** — constraints deduped by description in responses
 
 ### Changed
-- Version bump to `0.1.2` for npm publish
+- Default `topK` reduced from 15 to 10 for `get_by_path` and `check_change`
+- `oversight_session_start` returns BM25-ranked top-K constraints instead of all active
+
+### Fixed
+- Removed circular self-dependency (`oversight` listed as its own dependency)
 
 ---
 

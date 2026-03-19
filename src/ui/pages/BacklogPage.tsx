@@ -24,13 +24,18 @@ export default function BacklogPage({ onNavigate }: Props) {
   const [resolving, setResolving] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    fetchBacklog()
-      .then((data) => {
-        setItems(data)
-        setError(null)
-      })
-      .catch((e: unknown) => setError(String(e)))
-      .finally(() => setLoading(false))
+    function doFetch() {
+      fetchBacklog()
+        .then((data) => {
+          setItems(data)
+          setError(null)
+        })
+        .catch((e: unknown) => setError(String(e)))
+        .finally(() => setLoading(false))
+    }
+    doFetch()
+    const timer = setInterval(doFetch, 30_000)
+    return () => clearInterval(timer)
   }, [])
 
   async function handleResolve(id: string) {

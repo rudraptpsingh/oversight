@@ -20,13 +20,18 @@ export default function ConstraintsPage({ onNavigate }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchDecisions({ limit: 200 })
-      .then((data) => {
-        setDecisions(data)
-        setError(null)
-      })
-      .catch((e: unknown) => setError(String(e)))
-      .finally(() => setLoading(false))
+    function doFetch() {
+      fetchDecisions({ limit: 200 })
+        .then((data) => {
+          setDecisions(data)
+          setError(null)
+        })
+        .catch((e: unknown) => setError(String(e)))
+        .finally(() => setLoading(false))
+    }
+    doFetch()
+    const timer = setInterval(doFetch, 30_000)
+    return () => clearInterval(timer)
   }, [])
 
   const constraintsWithDecisions: ConstraintWithDecision[] = decisions.flatMap((d) =>

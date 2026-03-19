@@ -129,5 +129,61 @@ export async function initDb(oversightDir: string): Promise<Database> {
 
 export async function getDb(oversightDir: string): Promise<Database> {
   const dbPath = path.join(oversightDir, "decisions.db")
-  return openDatabase(dbPath)
+  const db = await openDatabase(dbPath)
+
+  // Additive migrations: run CREATE TABLE IF NOT EXISTS for all newer tables so
+  // existing DBs created before these tables were added continue to work.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS constraints (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      decision_id TEXT NOT NULL REFERENCES decisions(id),
+      description TEXT NOT NULL,
+      severity TEXT NOT NULL DEFAULT 'should',
+      rationale TEXT NOT NULL DEFAULT '',
+      confidence REAL NOT NULL DEFAULT 0.5,
+      check_count INTEGER NOT NULL DEFAULT 0,
+      override_count INTEGER NOT NULL DEFAULT 0,
+      consistency_score REAL NOT NULL DEFAULT 0.5,
+      last_checked INTEGER,
+      precondition TEXT,
+      invariant INTEGER NOT NULL DEFAULT 0,
+      recovery TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS constraint_confidence_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      constraint_id INTEGER NOT NULL,
+      confidence REAL NOT NULL,
+      recorded_at INTEGER NOT NULL,
+      event_type TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS override_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      constraint_id INTEGER,
+      decision_id TEXT,
+      commit_sha TEXT,
+      rationale TEXT NOT NULL,
+      intent_class TEXT NOT NULL DEFAULT 'unknown',
+      created_at INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS regression_links (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      decision_id TEXT,
+      commit_sha TEXT NOT NULL,
+      test_name TEXT NOT NULL,
+      failure_message TEXT,
+      resolved INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL
+    );
+  `)
+
+  // Column-level migration for check_change_log
+  const cols = db.prepare("PRAGMA table_info(check_change_log)").all() as Array<{ name: string }>
+  if (!cols.some(c => c.name === "enforcement_outcome")) {
+    db.prepare("ALTER TABLE check_change_log ADD COLUMN enforcement_outcome TEXT").run()
+  }
+
+  return db
 }

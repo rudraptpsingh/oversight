@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "oversight": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "oversight-mcp"
+      ],
+      "cwd": "/Users/rp/github/whycode"
+    }
+  }
+}
